@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--  titulo de activities de menu -->
+    <string name="app_name">GruaDroid</string>
+
+    <!--  texto de menu -->
+    <string name="visible">Hacer visible</string>
+    <string name="cambiar">Encender Bluetooth</string>
+    <string name="conectar">Conectar a dispositivo</string>
+    <string name="voltaje">Voltaje de Bateria</string>
+
+    <!--  texto de TextView -->
+    <string name="novinculados">No se encontraron dispositivos vinculados</string>
+    <string name="noencontrados">No se encontraron dispositivos</string>
+    <string name="velocidad">Velocidad: 50%</string>
+
+
+    <!-- textos BT -->
+    <string name="bt_DC">Conexión: \n Desconectado</string>
+    <string name="bt_CT">Conexión: \n Conectado</string>
+    <string name="bt_CTING">Conexión: \n Conectando</string>
+    <string name="bt_read">Estado del elemento: \n Desconocida</string>
+    <string name="bt_consola">Sin conexión</string>
+    <string name="bt_regla">Posicion actual: -- cm</string>
+    <string name="bt_elemento_on">Estado del elemento: \n Encendido</string>
+    <string name="bt_elemento_off">Estado del elemento: \n Apagado</string>
+    <string name="bt_sin_elemento">Estado del elemento: \n Seleccione elemento</string>
+
+    <!-- texto de botones -->
+    <string name="buscar">Buscar Dispositivos</string>
+
+
+    <!-- textos DeviceList-->
+    <string name="dialog_vinculados">Dispositivos Vinculados</string>
+    <string name="dialog_encontados">Dispositivos Encontrados</string>
+
+</resources>

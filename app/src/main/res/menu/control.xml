@@ -1,0 +1,16 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="app.upibi.gibran.dimmex.Admin" >
+
+    <item android:id="@+id/buscar"
+    android:orderInCategory="1"
+    android:title="@string/conectar"/>
+
+    <item android:id="@+id/visible"
+        android:orderInCategory="3"
+        android:title="@string/visible"/>
+
+    <item android:id="@+id/voltaje"
+        android:orderInCategory="3"
+        android:title="@string/voltaje"/>
+</menu>
