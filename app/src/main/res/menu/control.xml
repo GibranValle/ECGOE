@@ -7,10 +7,10 @@
     android:title="@string/conectar"/>
 
     <item android:id="@+id/visible"
-        android:orderInCategory="3"
+        android:orderInCategory="2"
         android:title="@string/visible"/>
 
-    <item android:id="@+id/voltaje"
+    <item android:id="@+id/datos"
         android:orderInCategory="3"
-        android:title="@string/voltaje"/>
+        android:title="@string/datos"/>
 </menu>

@@ -6,33 +6,42 @@
     </style>
 
     <style name="titulo">
-        <item name="android:textColor">@color/letra2</item>
+        <item name="android:textColor">@color/letra</item>
         <item name="android:textSize">14pt</item>
         <item name="android:gravity">center</item>
         <item name="android:textStyle">bold</item>
     </style>
 
     <style name="textogrande">
-        <item name="android:textColor">@color/letra2</item>
-        <item name="android:textSize">12pt</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/letra</item>
+        <item name="android:textSize">11pt</item>
         <item name="android:gravity">center</item>
     </style>
 
     <style name="textomediano">
-        <item name="android:textColor">@color/letra2</item>
+        <item name="android:textColor">@color/letra</item>
         <item name="android:textSize">10pt</item>
         <item name="android:gravity">center</item>
     </style>
 
+    <style name="textoPaciente">
+        <item name="android:textColor">@color/paciente</item>
+        <item name="android:textSize">10pt</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:gravity">center</item>
+    </style>
+
     <style name="textopequeño">
-        <item name="android:textColor">@color/letra2</item>
+        <item name="android:textColor">@color/letra</item>
         <item name="android:textSize">8pt</item>
         <item name="android:gravity">center</item>
     </style>
 
     <style name="boton">
-        <item name="android:textColor">@color/letra</item>
+        <item name="android:textColor">@color/subfondo</item>
         <item name="android:background">@color/boton</item>
+        <item name="android:textSize">11pt</item>
     </style>
 
 </resources>

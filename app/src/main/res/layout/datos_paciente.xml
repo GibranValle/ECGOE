@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_gravity="center|top"
+    android:padding="15dp"
+    android:layout_height="wrap_content">
+
+    <!--Titulo-->
+    <TextView
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Ingresar datos paciente"
+        android:id="@+id/titulo"
+        android:layout_marginBottom="10dp"
+    />
+
+    <!--Linea-->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/azul"
+        android:id="@+id/linea"
+    />
+
+    <LinearLayout
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal"
+        >
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Nombre: "
+            android:id="@+id/fp_out1"
+            />
+        <EditText
+            android:maxLength="5"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:inputType="numberDecimal"
+            android:ems="10"
+            android:gravity="center"
+            android:hint="Años"
+            android:id="@+id/fp_in1" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:visibility="gone"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="50dp">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Edad: "
+            android:id="@+id/fp_out2"
+            />
+        <EditText
+            android:maxLength="5"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:inputType="numberDecimal"
+            android:ems="10"
+            android:gravity="center"
+            android:hint="Hz"
+            android:id="@+id/fp_in2" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"    >
+
+        <TextView
+            android:gravity="left|center"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Nombre: "
+            android:id="@+id/fm_ou1"
+            />
+        <EditText
+            android:maxLength="25"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="3"
+            android:inputType="textCapWords"
+            android:ems="10"
+            android:gravity="center"
+            android:hint="Paciente"
+            android:id="@+id/paciente_nombre" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        >
+        <TextView
+            android:gravity="left|center"
+            android:layout_marginBottom="10dp"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Edad: "
+            android:id="@+id/fm_out2"
+            />
+        <EditText
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="3"
+            android:inputType="numberDecimal"
+            android:ems="10"
+            android:gravity="center"
+            android:hint="Años"
+            android:id="@+id/paciente_edad" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:id="@+id/botones">
+        <Button
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:text="Actualizar"
+            android:id="@+id/b_actualizar" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:text="Cancelar"
+            android:id="@+id/b_cancelar" />
+    </LinearLayout>
+
+    <Switch
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textOff="No"
+        android:textOn="Sí"
+        android:text="Activar incremento de frecuencia: "
+        android:id="@+id/switch1" />
+</LinearLayout>

@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="letra">#ffbababb</color>
-    <color name="letra2">#ff08f7fe</color>
+    <color name="letra">#ff524a48</color>
     <color name="hint">#3dbababb</color>
     <color name="RED">#8cff0000</color>
     <color name="GREEN">#8c00ff00</color>
     <color name="BLUE">#8c0000ff</color>
     <color name="azul">#ff497ec0</color>
     <color name="azul2">#8accf7f2</color>
-    <color name="boton">#e6267149</color>
+    <color name="boton">#AA6057</color>
     <color name="boton_paro">#8cff0000</color>
-    <color name="boton_paro_push">#d2700000</color>
+    <color name="paciente">#d2700000</color>
     <color name="botonApretado">#e6000394</color>
+    <color name="Fondo1">#D0C3BB</color>
+    <color name="subfondo">#EFF0EA</color>
+    <color name="botones">#B4A48A</color>
+
     <!-- RGB -->
     <color name="azul3">#0F0</color>
 </resources>

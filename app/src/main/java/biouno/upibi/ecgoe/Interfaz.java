@@ -6,6 +6,10 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -13,16 +17,13 @@ import android.os.Vibrator;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.CompoundButton;
-import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 
-public class Interfaz extends Activity implements CompoundButton.OnCheckedChangeListener, SeekBar.OnSeekBarChangeListener, View.OnClickListener {
+public class Interfaz extends Activity {
     /*//////////////////////// CONSTANTES PARA BLUETOOTH//////////////////////////////////////////*/
     // Message types sent from the BluetoothChatService Handler
     public static final int MESSAGE_STATE_CHANGE = 1;
@@ -48,38 +49,68 @@ public class Interfaz extends Activity implements CompoundButton.OnCheckedChange
     private static final boolean D = true;
     /*//////////////////////// CONSTANTES PARA BLUETOOTH//////////////////////////////////////////*/
 
-    TextView estado, consola, velocidad, regla;
-    ToggleButton power, direccion;
-    ImageButton emergencia;
+    ImageView espacio;
+    Bitmap bitmap;
+    Canvas canvas;
+    Paint paint;
+    TextView estado, paciente;
     Intent i;
     String TAG = "Interfaz";
     SharedPreferences respaldo;
     SeekBar barra;
-    int porcentaje = 50;
-    boolean activo = false;
-    boolean dir = false;
+
+    String nombre_paciente,edad;
+
     boolean usuario = true;
+    int to, t1;
+    float vo, vf;
+    int a;
+    int xo,x1,yo,y1;
+
     /* METODOS SECUENCIADOS */
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, " onCreate ");
         setContentView(R.layout.activity_interfaz);
 
-        //cargar recurso xml
-        consola = (TextView) findViewById(R.id.consola);
-        regla = (TextView) findViewById(R.id.regla);
-        estado = (TextView) findViewById(R.id.estado_conexion);
-        velocidad = (TextView) findViewById(R.id.velocidad);
-        power = (ToggleButton) findViewById(R.id.power);
-        direccion = (ToggleButton) findViewById(R.id.direccion);
-        emergencia = (ImageButton) findViewById(R.id.emergencia);
-        barra = (SeekBar) findViewById(R.id.speed);
+        estado = (TextView) findViewById(R.id.estado);
+        paciente = (TextView) findViewById(R.id.IDpaciente);
 
-        // asignar un listener
-        power.setOnCheckedChangeListener(this);
-        direccion.setOnCheckedChangeListener(this);
-        emergencia.setOnClickListener(this);
-        barra.setOnSeekBarChangeListener(this);
+        xo = 0;
+        x1 = 570;
+        yo = 180/2;
+        y1=180/2;
+        espacio = (ImageView) findViewById(R.id.Grafica);
+        bitmap = Bitmap.createBitmap(580, 185, Bitmap.Config.ARGB_8888);
+        espacio.setImageBitmap(bitmap);
+
+        canvas = new Canvas(bitmap);
+        paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paint.setColor(Color.BLACK);
+        paint.setStrokeWidth(1);
+
+        canvas.drawLine(xo,yo,x1,y1,paint);
+        paint.setColor(Color.RED);
+
+        to = 0;
+        t1 = 10;
+        vo = 0;
+        for (a = 0; a<500; a++)
+        {
+            vf = (float) (+yo + Math.sin(a)*100);
+            canvas.drawLine(to,vo,t1,vf,paint);
+            to = to +1;
+            t1 = t1 + 1;
+            vo = vf;
+        }
+
+        final SharedPreferences respaldo = getSharedPreferences("MisDatos", Context.MODE_PRIVATE);
+        // cargar la clave en la variable clave, o 0000 por default (no encontrada, etc);
+        nombre_paciente = respaldo.getString("nombre_paciente","Paciente");
+        Log.d(TAG, "Nombre cargado: "+ nombre_paciente);
+        edad = respaldo.getString("edad", "18");
+        Log.d(TAG, "Edad cargado: "+edad);
+        paciente.setText(nombre_paciente +"\n"+edad+" años");
 
         //////////////////*BLUETOOH ////////////////*/////////////////*/////////////////*/////////////////*/
         // Obtener el adaptador y comprobar soporte de BT
@@ -93,6 +124,15 @@ public class Interfaz extends Activity implements CompoundButton.OnCheckedChange
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "RESUMIENDO");
+
+        final SharedPreferences respaldo = getSharedPreferences("MisDatos", Context.MODE_PRIVATE);
+        // cargar la clave en la variable clave, o 0000 por default (no encontrada, etc);
+        nombre_paciente = respaldo.getString("nombre_paciente","Paciente");
+        Log.d(TAG, "Nombre cargado: "+ nombre_paciente);
+        edad = respaldo.getString("edad", "18");
+        Log.d(TAG, "Edad cargado: "+edad);
+        paciente.setText(nombre_paciente +"\n"+edad+" años");
+
         //////////////////*BLUETOOH ////////////////*/////////////////*/////////////////*/////////////////*/
         if (!BTadaptador.isEnabled())//habilitar si no lo esta
         {
@@ -148,123 +188,7 @@ public class Interfaz extends Activity implements CompoundButton.OnCheckedChange
         vibrador.vibrate(ms);
     }
 
-
-   /* TOGGLE BUTTONS */
-    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)  //BOTON POWER
-    {
-        if(buttonView.getId() == R.id.power) // primer boton
-        {
-            vibrar(100);
-            if(isChecked)
-            {
-                activo = true;
-                Log.d(TAG, "POWER ON");
-                if(dir)
-                {
-                    enviarMensaje("A" + porcentaje);
-                    Log.d(TAG, "SUBIR");
-                }
-                else
-                {
-                    enviarMensaje("B" + porcentaje);
-                    Log.d(TAG, "BAJAR");
-                }
-            }
-            else
-            {
-                activo = false;
-                Log.d(TAG, "POWER OFF");
-                // VER SI EL USUARIO PRESIONÓ EL BOTON
-                if(usuario)
-                {
-                    enviarMensaje("S"); // ENVIAR ID DE PARO NORMAL
-                    Log.d(TAG, "STOP NORMAL");
-                }
-                else    // PARO DE EMERGENCIA
-                {
-                    // se realizó paro de emergencia
-                    usuario = true; // REACTIVAR FUNCION USUARIO
-                    //NO ENVIAR ID
-                    Log.d(TAG, "PARO DE EMERGENCIA");
-                }
-            }
-        }
-
-        if(buttonView.getId() == R.id.direccion) // segundo boton
-        {
-            vibrar(100);
-            if(activo)
-            {
-                if(isChecked)   // SUBIR
-                {
-                    dir = true;
-                    Log.d(TAG, "SUBIR");
-                    enviarMensaje("A" + porcentaje);    // SUBIR
-                }
-                else    // BAJAR
-                {
-                    dir = false;
-                    Log.d(TAG, "BAJAR");
-                    enviarMensaje("B" + porcentaje);   // BAJAR
-                }
-            }
-            else
-            {
-                if(isChecked)   // SUBIR
-                {
-                    dir = true;
-                    Log.d(TAG, "CAMBIAR DIRECCION SIN ENVIAR, SUBIR");
-                }
-                else    // BAJAR
-                {
-                    dir = false;
-                    Log.d(TAG, "CAMBIAR DIRECCION SIN ENVIAR, BAJAR");
-                }
-            }
-        }
-    }
-   /* TOGGLE BUTTONS */
-
-
-    @Override   // BOTON DE PARO DE EMERGENCIA
-    public void onClick(View v)
-    {
-        vibrar(100);
-        barra.setProgress(0);
-        velocidad.setText("Velocidad: 0%");
-        Log.d(TAG, "PARO DE EMERGENCIA ON");
-        usuario = false;
-        power.setChecked(false);
-        enviarMensaje("E");
-    }
-
-    @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        porcentaje = progress;
-        velocidad.setText("Velocidad: " + porcentaje+"%");
-    }
-
-    @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
-
-    }
-
-    @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {
-        if(activo)
-        {
-            if(dir)
-            {
-                enviarMensaje("A" + porcentaje);
-            }
-            else
-            {
-                enviarMensaje("B" + porcentaje);
-            }
-        }
-    }
-
-    /* ///////////////////////////////MENU/////////////////////////////////////////////////////// */
+       /* ///////////////////////////////MENU/////////////////////////////////////////////////////// */
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.control, menu);
         return true;
@@ -284,9 +208,8 @@ public class Interfaz extends Activity implements CompoundButton.OnCheckedChange
                 hacerVisible();
                 break;
 
-            case R.id.voltaje: // pedir medicion de voltaje
-                Log.d(TAG, "MEDIR VOLTAJE");
-                enviarMensaje("V");
+            case R.id.datos: //Modificar Datos Paciente
+                startActivity(new Intent(this,DatosPaciente.class));
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -415,26 +338,20 @@ public class Interfaz extends Activity implements CompoundButton.OnCheckedChange
                         {
                             String valor = readMessage.substring(1,5);
                             float valors = Float.parseFloat(valor)/100;
-                            regla.setText("Posición actual: "+valors+"cm");
                         }
                         else if(readMessage.startsWith("V"))
                         {
                             String valor = readMessage.substring(1,5);
                             float valors = Float.parseFloat(valor)/100;
-                            consola.setText("Voltaje Bateria: "+valors+"V");
                         }
                         else if(readMessage.startsWith("P"))
                         {
                             vibrar(100);
                             barra.setProgress(0);
-                            velocidad.setText("Velocidad: 0%");
-                            consola.setText(readMessage);
                             usuario = false; // PARO DE EMERGENCIA, NO FUE USUARIO
-                            power.setChecked(false);
                         }
                         else
                         {
-                            consola.setText(readMessage);
                         }
                     }
                     break;
