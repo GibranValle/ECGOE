@@ -1,5 +1,7 @@
 package biouno.upibi.ecgoe;
 
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -17,13 +19,16 @@ import android.os.Vibrator;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.animation.LinearInterpolator;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 
-public class Interfaz extends Activity {
+public class Interfaz extends Activity implements View.OnClickListener{
     /*//////////////////////// CONSTANTES PARA BLUETOOTH//////////////////////////////////////////*/
     // Message types sent from the BluetoothChatService Handler
     public static final int MESSAGE_STATE_CHANGE = 1;
@@ -49,7 +54,7 @@ public class Interfaz extends Activity {
     private static final boolean D = true;
     /*//////////////////////// CONSTANTES PARA BLUETOOTH//////////////////////////////////////////*/
 
-    ImageView espacio;
+    ImageView espacio, corazon;
     Bitmap bitmap;
     Canvas canvas;
     Paint paint;
@@ -58,8 +63,12 @@ public class Interfaz extends Activity {
     String TAG = "Interfaz";
     SharedPreferences respaldo;
     SeekBar barra;
+    Button boton;
+    ObjectAnimator animador;
+    LinearInterpolator lineal;
+    AnimatorSet set,set1,set2,set3;
 
-    String nombre_paciente,edad;
+    private String nombrePaciente, edadPaciente;
 
     boolean usuario = true;
     int to, t1;
@@ -73,44 +82,53 @@ public class Interfaz extends Activity {
         Log.d(TAG, " onCreate ");
         setContentView(R.layout.activity_interfaz);
 
+        set = new AnimatorSet();
+        set1 = new AnimatorSet();
+        set2 = new AnimatorSet();
+        set3 = new AnimatorSet();
+
         estado = (TextView) findViewById(R.id.estado);
         paciente = (TextView) findViewById(R.id.IDpaciente);
+        corazon = (ImageView) findViewById(R.id.corazon);
+        boton = (Button) findViewById(R.id.refresh);
 
+        boton.setOnClickListener(this);
+
+        // Acondicionamiento del canvas para empezar a graficar
         xo = 0;
-        x1 = 570;
-        yo = 180/2;
-        y1=180/2;
-        espacio = (ImageView) findViewById(R.id.Grafica);
-        bitmap = Bitmap.createBitmap(580, 185, Bitmap.Config.ARGB_8888);
-        espacio.setImageBitmap(bitmap);
+        x1 = 700;
+        yo = 200/2; // origen (eje X)
+        y1=200/2;
 
+        // Elegir el ImageView como un canvas
+        espacio = (ImageView) findViewById(R.id.Grafica);
+        bitmap = Bitmap.createBitmap(700, 200, Bitmap.Config.ARGB_8888);
+        espacio.setImageBitmap(bitmap);
         canvas = new Canvas(bitmap);
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setColor(Color.BLACK);
+        paint.setColor(Color.WHITE);
         paint.setStrokeWidth(1);
-
         canvas.drawLine(xo,yo,x1,y1,paint);
         paint.setColor(Color.RED);
+        //
 
         to = 0;
         t1 = 10;
         vo = 0;
         for (a = 0; a<500; a++)
         {
-            vf = (float) (+yo + Math.sin(a)*100);
+            vf = (float) (+yo + Math.sin(a)*100); //agregar offset de yo
             canvas.drawLine(to,vo,t1,vf,paint);
             to = to +1;
             t1 = t1 + 1;
             vo = vf;
         }
 
-        final SharedPreferences respaldo = getSharedPreferences("MisDatos", Context.MODE_PRIVATE);
-        // cargar la clave en la variable clave, o 0000 por default (no encontrada, etc);
-        nombre_paciente = respaldo.getString("nombre_paciente","Paciente");
-        Log.d(TAG, "Nombre cargado: "+ nombre_paciente);
-        edad = respaldo.getString("edad", "18");
-        Log.d(TAG, "Edad cargado: "+edad);
-        paciente.setText(nombre_paciente +"\n"+edad+" años");
+        // carga datos y los despliega en el textview
+        cargarDatos();
+
+        //animarCorazon
+        animarCorazon();
 
         //////////////////*BLUETOOH ////////////////*/////////////////*/////////////////*/////////////////*/
         // Obtener el adaptador y comprobar soporte de BT
@@ -125,13 +143,8 @@ public class Interfaz extends Activity {
         super.onResume();
         Log.d(TAG, "RESUMIENDO");
 
-        final SharedPreferences respaldo = getSharedPreferences("MisDatos", Context.MODE_PRIVATE);
-        // cargar la clave en la variable clave, o 0000 por default (no encontrada, etc);
-        nombre_paciente = respaldo.getString("nombre_paciente","Paciente");
-        Log.d(TAG, "Nombre cargado: "+ nombre_paciente);
-        edad = respaldo.getString("edad", "18");
-        Log.d(TAG, "Edad cargado: "+edad);
-        paciente.setText(nombre_paciente +"\n"+edad+" años");
+        // carga datos y los despliega en el textview
+        cargarDatos();
 
         //////////////////*BLUETOOH ////////////////*/////////////////*/////////////////*/////////////////*/
         if (!BTadaptador.isEnabled())//habilitar si no lo esta
@@ -180,13 +193,76 @@ public class Interfaz extends Activity {
             }
         }
     }
-    /* METODOS SECUENCIADOS */
+
+    @Override
+    public void onClick(View v)
+    {
+        Vibrator vibrador = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);        // Vibrate for 500 milliseconds
+        vibrador.vibrate(100);
+
+        if(v.getId() == R.id.refresh) // FRECUENCIA PORTADORA
+        {
+
+        }
+    }
+
+    //* METODOS PERSONALIZADOS
+    void animarCorazon()
+    {
+        //animacion
+        if (animador != null)
+        {
+            set.cancel();
+            set1.cancel();
+            set2.cancel();
+            set3.cancel();
+            animador.cancel();
+        }
+        animador = ObjectAnimator.ofFloat(corazon, "alpha", 1, 0.25f,1);
+        animador.setRepeatMode(ObjectAnimator.RESTART);
+        animador.setDuration(750);
+        animador.setRepeatCount(ObjectAnimator.INFINITE);
+        animador.setInterpolator(lineal);
+        set.play(animador);
+
+        animador = ObjectAnimator.ofFloat(corazon, "scaleX", 1, 0.8f, 1);
+        animador.setRepeatMode(ObjectAnimator.RESTART);
+        animador.setDuration(750);
+        animador.setRepeatCount(ObjectAnimator.INFINITE);
+        animador.setInterpolator(lineal);
+        set1.play(animador);
+
+        animador = ObjectAnimator.ofFloat(corazon,"scaleY",1, 0.8f, 1);
+        animador.setRepeatMode(ObjectAnimator.RESTART);
+        animador.setDuration(750);
+        animador.setRepeatCount(ObjectAnimator.INFINITE);
+        animador.setInterpolator(lineal);
+        set2.play(animador);
+
+        set3.playTogether(set,set1,set2);
+        set3.start();
+        Log.i(TAG, "Refresh");
+    }
 
     void vibrar(int ms)
     {
         Vibrator vibrador = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);        // Vibrate for 500 milliseconds
         vibrador.vibrate(ms);
     }
+
+    void cargarDatos()
+    {
+        // Cargar datos guardados
+        final SharedPreferences respaldo = getSharedPreferences("MisDatos", Context.MODE_PRIVATE);
+        // cargar el dato en la variable, o elegir por default la segunda opcion
+        nombrePaciente = respaldo.getString("patientName","Paciente");
+        Log.d(TAG, "Nombre cargado: "+ nombrePaciente);
+        edadPaciente = respaldo.getString("patientAge", "Edad");
+        Log.d(TAG, "Edad cargado: "+edadPaciente);
+        paciente.setText(nombrePaciente +"\n"+edadPaciente+" años");
+    }
+    //** METODOS PERSONALIZADOS
+
 
        /* ///////////////////////////////MENU/////////////////////////////////////////////////////// */
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -367,6 +443,5 @@ public class Interfaz extends Activity {
             }
         }
     };
-
 }
     /* ///////////////////////////////METODOS BLUETOOTH/////////////////////////////////////////////// */

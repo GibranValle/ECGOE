@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Vibrator;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -25,8 +24,8 @@ public class DatosPaciente extends Activity {
     private static final boolean D = true;
 
     Button actualizar, cancelar;
-    String nombre_paciente, edad;
-    TextView Nombre, Edad;
+    String nombrePaciente, edadPaciente;
+    TextView editPaciente, editEdad;
     Switch incrementos;
 
     @Override
@@ -37,24 +36,20 @@ public class DatosPaciente extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.datos_paciente);
 
-        Nombre = (TextView) findViewById(R.id.paciente_nombre);
-        Edad = (TextView) findViewById(R.id.paciente_edad);
+        editPaciente = (TextView) findViewById(R.id.paciente_nombre);
+        editEdad = (TextView) findViewById(R.id.paciente_edad);
         actualizar = (Button) findViewById(R.id.b_actualizar);
         cancelar = (Button) findViewById(R.id.b_cancelar);
         incrementos = (Switch) findViewById(R.id.switch1);
 
 
-        //cargar la clave en cada push, abrir el archivo en modo privado
         final SharedPreferences respaldo = getSharedPreferences("MisDatos", Context.MODE_PRIVATE);
         // cargar la clave en la variable clave, o 0000 por default (no encontrada, etc);
-        nombre_paciente = respaldo.getString("nombre_paciente","Orlando");
-        edad = respaldo.getString("edad","25");
+        nombrePaciente = respaldo.getString("patientName","Paciente");
+        edadPaciente = respaldo.getString("patientAge","Edad");
 
-        Log.d(TAG, "Nombre cargado: "+ nombre_paciente);
-        Log.d(TAG, "Edad cargado" + edad);
-
-        Nombre.setText(nombre_paciente);
-        Edad.setText(edad);
+        editPaciente.setText(nombrePaciente);
+        editEdad.setText(edadPaciente);
 
         incrementos.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -70,14 +65,14 @@ public class DatosPaciente extends Activity {
             {
                 Vibrator vibrador = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);        // Vibrate for 500 milliseconds
                 vibrador.vibrate(100);
-                edad = Edad.getText().toString();
 
-                Log.d(TAG, "Nombre cargado: "+ nombre_paciente);
-                Log.d(TAG, "Edad cargado" + edad);
+                nombrePaciente = editPaciente.getText().toString();
+                edadPaciente = editEdad.getText().toString();
 
                 SharedPreferences.Editor editor = respaldo.edit();
-                editor.putString("nombre_paciente", nombre_paciente);
-                editor.putString("edad", edad);
+                editor.putString("patientName", nombrePaciente);
+                editor.putString("patientAge", edadPaciente);
+
                 if(editor.commit())
                 {
                     Toast.makeText(getBaseContext(),"Actualizado correctamente", Toast.LENGTH_SHORT).show();
@@ -87,14 +82,14 @@ public class DatosPaciente extends Activity {
         });
 
         cancelar.setOnClickListener(new View.OnClickListener()
-        {
-            public void onClick(View v)
-            {
-                Vibrator vibrador = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);        // Vibrate for 500 milliseconds
-                vibrador.vibrate(100);
-                finish();
-            }
-        }
+                                    {
+                                        public void onClick(View v)
+                                        {
+                                            Vibrator vibrador = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);        // Vibrate for 500 milliseconds
+                                            vibrador.vibrate(100);
+                                            finish();
+                                        }
+                                    }
         );
 
     }
