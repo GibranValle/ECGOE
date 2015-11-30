@@ -24,10 +24,12 @@ import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class Interfaz extends Activity implements View.OnClickListener{
@@ -69,17 +71,27 @@ public class Interfaz extends Activity implements View.OnClickListener{
     ObjectAnimator animador;
     LinearInterpolator lineal;
     AnimatorSet set,set1,set2,set3;
-    LinearLayout layout;
+    Timer timer;
+    TimerTask timerTask;
 
-    private String nombrePaciente, edadPaciente;
-
+    final Handler handler = new Handler();
+    String nombrePaciente, edadPaciente;
     boolean usuario = true;
-    int to, tf;
-    float vo, vf;
-    int a;
+    int to, tf, vo, vf;
     int xo,x1,yo,y1,paso;
-    int toggle = 0;
-    int alto, ancho, origeny;
+    int alto, ancho, origeny,a;
+    final int vectorECG[]={120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,
+            120,120,121,122,124,126,127,129,131,133,135,137,139,141,142,143,144,144,144,143,142,
+            140,138,136,133,131,128,126,124,122,121,120,120,120,120,120,120,120,120,120,120,120,120,
+            120,120,120,120,120,120,120,120,119,117,115,113,110,108,106,104,102,102,103,108,116,127,
+            139,153,167,181,196,209,220,230,236,240,240,238,234,229,222,214,205,196,185,175,164,153,
+            142,132,122,113,104,97,91,87,85,84,93,107,119,120,120,120,120,120,120,120,120,120,
+            120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,121,121,122,123,
+            124,125,126,127,128,129,129,130,131,131,132,132,132,132,131,131,130,129,128,127,126,125,
+            124,123,122,122,121,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,
+            120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,
+            120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,
+            120,120,120,120,120,120,120,120,120,120};
 
     /* METODOS SECUENCIADOS */
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,6 +117,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
         x1 = ancho;
         yo = 0;
         y1=alto;
+        a = 0;
 
         origeny = alto/2;
         boton.setOnClickListener(this);
@@ -116,21 +129,6 @@ public class Interfaz extends Activity implements View.OnClickListener{
         paint = new Paint(Paint.FILTER_BITMAP_FLAG);
 
         empezarCanvas();
-
-        // Graficar función seno
-        paso = 1;
-        to = 0;
-        vo = origeny;
-        tf = to+paso;
-
-        for (a = 0; a<ancho; a++)
-        {
-            vf = (float) (origeny + Math.sin(0.08*a)*100); //agregar offset de yo
-            canvas.drawLine(to,vo,tf,vf,paint);
-            to = to+paso;
-            tf = tf+paso;
-            vo = vf;
-        }
 
         // carga datos y los despliega en el textview
         cargarDatos();
@@ -152,6 +150,8 @@ public class Interfaz extends Activity implements View.OnClickListener{
         Log.d(TAG, "RESUMIENDO");
         // carga datos y los despliega en el textview
         cargarDatos();
+        //onResume we start our timer so it can start when the app comes from the background
+        startTimer();
 
         //////////////////*BLUETOOH ////////////////*/////////////////*/////////////////*/////////////////*/
         if (!BTadaptador.isEnabled())//habilitar si no lo esta
@@ -209,35 +209,57 @@ public class Interfaz extends Activity implements View.OnClickListener{
 
         if(v.getId() == R.id.refresh) // FRECUENCIA PORTADORA
         {
-            // Graficar función seno
-            paso = 1;
-            to = 0;
-            vo = origeny;
-            tf = to+paso;
-            float f=0.075f;
-            if (toggle == 0)
-            {
-                f = 0.1f;
-                toggle = 1;
-            }
-            else if(toggle == 1)
-            {
-                f = 0.05f;
-                toggle = 0;
-            }
             empezarCanvas();
-            for (a = 0; a<700; a++)
-            {
-                vf = (float) (origeny + Math.sin(f*a)*100); //agregar offset de yo
-                canvas.drawLine(to,vo,tf,vf,paint);
-                to = to+paso;
-                tf = tf+paso;
-                vo = vf;
-            }
         }
     }
 
+    public void startTimer() {
+        //instanciar nuevo timer
+        timer = new Timer();
+        //inicializar el timer
+        initializeTimerTask();
+        //esperar 0ms para empezar, repetir cada 100ms
+        timer.schedule(timerTask, 0, 4); //
+    }
+
+    public void stoptimertask(View v) {
+        //parar el timer, si no esta vacio
+
+    }
+
+    public void initializeTimerTask() {
+        timerTask = new TimerTask() {
+            public void run() {
+                //use a handler to run a toast that shows the current timestamp
+                handler.post(new Runnable() {
+                    public void run() {
+                        //aquí va la acción a realizar
+                        graficar();
+                    }
+                });
+            }
+        };
+    }
+
     //* METODOS PERSONALIZADOS
+    void graficar()
+    {
+        if (to == ancho)
+        {
+            empezarCanvas();
+        }
+        if(a==250)
+        {
+            a=0;
+        }
+        tf = to + paso;
+        vf = vectorECG[a];
+        canvas.drawLine(to,vo,tf,vf,paint);
+        to = to + paso;
+        vo = vf;
+        a = a+1;
+    }
+
     void empezarCanvas()
     {
         canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
@@ -257,8 +279,12 @@ public class Interfaz extends Activity implements View.OnClickListener{
         canvas.drawLine(8*ancho/10, 0, 8*ancho/10, alto, paint);
         canvas.drawLine(9*ancho/10, 0, 9*ancho/10, alto, paint);
 
-
         paint.setStrokeWidth(3);
+
+        paso = 1;
+        to = 0;
+        vo = origeny;
+        tf = to+paso;
     }
 
     void animarCorazon()

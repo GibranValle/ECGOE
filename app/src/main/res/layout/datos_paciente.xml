@@ -16,13 +16,14 @@
         android:text="Ingresar datos paciente"
         android:id="@+id/titulo"
         android:layout_marginBottom="10dp"
-    />
+        style="@style/titulo"
+        />
 
     <!--Linea-->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/azul"
+        android:background="@color/GREEN2"
         android:id="@+id/linea"
     />
 
@@ -39,6 +40,7 @@
             android:layout_weight="2"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="Nombre: "
+            style="@style/letra"
             android:id="@+id/fp_out1"
             />
         <EditText
@@ -66,6 +68,7 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="Edad: "
             android:id="@+id/fp_out2"
+            style="@style/letra"
             />
         <EditText
             android:maxLength="5"
@@ -90,6 +93,7 @@
             android:layout_weight="1"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="Nombre: "
+            style="@style/letramediana"
             android:id="@+id/fm_ou1"
             />
         <EditText
@@ -99,6 +103,7 @@
             android:layout_weight="3"
             android:inputType="textCapWords"
             android:ems="10"
+            android:textColorHint="@color/GREEN3"
             android:gravity="center"
             android:hint="Paciente"
             android:id="@+id/paciente_nombre" />
@@ -111,6 +116,7 @@
         >
         <TextView
             android:gravity="left|center"
+            style="@style/letramediana"
             android:layout_marginBottom="10dp"
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -121,6 +127,7 @@
             />
         <EditText
             android:layout_width="0dp"
+            android:textColorHint="@color/GREEN3"
             android:layout_height="match_parent"
             android:layout_weight="3"
             android:inputType="numberDecimal"
@@ -139,17 +146,21 @@
         android:gravity="center"
         android:id="@+id/botones">
         <Button
+            android:layout_margin="2dp"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent"
+            style="@style/textoBoton"
             android:text="Actualizar"
             android:id="@+id/b_actualizar" />
 
         <Button
+            android:layout_margin="2dp"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent"
             android:text="Cancelar"
+            style="@style/textoBoton"
             android:id="@+id/b_cancelar" />
     </LinearLayout>
 
