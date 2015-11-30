@@ -12,6 +12,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -23,6 +24,7 @@ import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -67,14 +69,17 @@ public class Interfaz extends Activity implements View.OnClickListener{
     ObjectAnimator animador;
     LinearInterpolator lineal;
     AnimatorSet set,set1,set2,set3;
+    LinearLayout layout;
 
     private String nombrePaciente, edadPaciente;
 
     boolean usuario = true;
-    int to, t1;
+    int to, tf;
     float vo, vf;
     int a;
-    int xo,x1,yo,y1;
+    int xo,x1,yo,y1,paso;
+    int toggle = 0;
+    int alto, ancho, origeny;
 
     /* METODOS SECUENCIADOS */
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,36 +96,39 @@ public class Interfaz extends Activity implements View.OnClickListener{
         paciente = (TextView) findViewById(R.id.IDpaciente);
         corazon = (ImageView) findViewById(R.id.corazon);
         boton = (Button) findViewById(R.id.refresh);
-
-        boton.setOnClickListener(this);
+        espacio = (ImageView) findViewById(R.id.Grafica);
 
         // Acondicionamiento del canvas para empezar a graficar
+        alto = 240;
+        ancho = 700;
         xo = 0;
-        x1 = 700;
-        yo = 200/2; // origen (eje X)
-        y1=200/2;
+        x1 = ancho;
+        yo = 0;
+        y1=alto;
+
+        origeny = alto/2;
+        boton.setOnClickListener(this);
 
         // Elegir el ImageView como un canvas
-        espacio = (ImageView) findViewById(R.id.Grafica);
-        bitmap = Bitmap.createBitmap(700, 200, Bitmap.Config.ARGB_8888);
+        bitmap = Bitmap.createBitmap(ancho, alto, Bitmap.Config.ARGB_8888);
         espacio.setImageBitmap(bitmap);
         canvas = new Canvas(bitmap);
-        paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setColor(Color.WHITE);
-        paint.setStrokeWidth(1);
-        canvas.drawLine(xo,yo,x1,y1,paint);
-        paint.setColor(Color.RED);
-        //
+        paint = new Paint(Paint.FILTER_BITMAP_FLAG);
 
+        empezarCanvas();
+
+        // Graficar función seno
+        paso = 1;
         to = 0;
-        t1 = 10;
-        vo = 0;
-        for (a = 0; a<500; a++)
+        vo = origeny;
+        tf = to+paso;
+
+        for (a = 0; a<ancho; a++)
         {
-            vf = (float) (+yo + Math.sin(a)*100); //agregar offset de yo
-            canvas.drawLine(to,vo,t1,vf,paint);
-            to = to +1;
-            t1 = t1 + 1;
+            vf = (float) (origeny + Math.sin(0.08*a)*100); //agregar offset de yo
+            canvas.drawLine(to,vo,tf,vf,paint);
+            to = to+paso;
+            tf = tf+paso;
             vo = vf;
         }
 
@@ -142,7 +150,6 @@ public class Interfaz extends Activity implements View.OnClickListener{
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "RESUMIENDO");
-
         // carga datos y los despliega en el textview
         cargarDatos();
 
@@ -202,11 +209,58 @@ public class Interfaz extends Activity implements View.OnClickListener{
 
         if(v.getId() == R.id.refresh) // FRECUENCIA PORTADORA
         {
-
+            // Graficar función seno
+            paso = 1;
+            to = 0;
+            vo = origeny;
+            tf = to+paso;
+            float f=0.075f;
+            if (toggle == 0)
+            {
+                f = 0.1f;
+                toggle = 1;
+            }
+            else if(toggle == 1)
+            {
+                f = 0.05f;
+                toggle = 0;
+            }
+            empezarCanvas();
+            for (a = 0; a<700; a++)
+            {
+                vf = (float) (origeny + Math.sin(f*a)*100); //agregar offset de yo
+                canvas.drawLine(to,vo,tf,vf,paint);
+                to = to+paso;
+                tf = tf+paso;
+                vo = vf;
+            }
         }
     }
 
     //* METODOS PERSONALIZADOS
+    void empezarCanvas()
+    {
+        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        paint.setColor(0xff1d721d);
+        paint.setStrokeWidth(1);
+        canvas.drawLine(xo, origeny, x1, origeny, paint);
+        canvas.drawLine(xo, alto/4, x1, alto/4, paint);
+        canvas.drawLine(xo, 3*alto/4, x1, 3*alto/4, paint);
+
+        canvas.drawLine(ancho/10, 0, ancho/10, alto, paint);
+        canvas.drawLine(2*ancho/10, 0, 2*ancho/10, alto, paint);
+        canvas.drawLine(3*ancho/10, 0, 3*ancho/10, alto, paint);
+        canvas.drawLine(4*ancho/10, 0, 4*ancho/10, alto, paint);
+        canvas.drawLine(5*ancho/10, 0, 5*ancho/10, alto, paint);
+        canvas.drawLine(6*ancho/10, 0, 6*ancho/10, alto, paint);
+        canvas.drawLine(7*ancho/10, 0, 7*ancho/10, alto, paint);
+        canvas.drawLine(8*ancho/10, 0, 8*ancho/10, alto, paint);
+        canvas.drawLine(9*ancho/10, 0, 9*ancho/10, alto, paint);
+
+
+        paint.setStrokeWidth(3);
+    }
+
     void animarCorazon()
     {
         //animacion

@@ -12,36 +12,42 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="textogrande">
-        <item name="android:textStyle">bold</item>
-        <item name="android:textColor">@color/letra</item>
-        <item name="android:textSize">11pt</item>
-        <item name="android:gravity">center</item>
-    </style>
-
-    <style name="textomediano">
-        <item name="android:textColor">@color/letra</item>
-        <item name="android:textSize">10pt</item>
-        <item name="android:gravity">center</item>
-    </style>
-
     <style name="textoPaciente">
         <item name="android:textColor">@color/paciente</item>
-        <item name="android:textSize">10pt</item>
+        <item name="android:textSize">8pt</item>
         <item name="android:textStyle">bold</item>
         <item name="android:gravity">center</item>
     </style>
 
-    <style name="textopequeño">
+    <style name="letraSaludable">
+        <item name="android:textColor">@color/GREEN2</item>
+        <item name="android:textSize">8pt</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="letraEnfermo">
+        <item name="android:textColor">@color/RED</item>
+        <item name="android:textSize">8pt</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="letraNeutro">
         <item name="android:textColor">@color/letra</item>
         <item name="android:textSize">8pt</item>
         <item name="android:gravity">center</item>
     </style>
 
-    <style name="boton">
-        <item name="android:textColor">@color/subfondo</item>
+    <style name="letra">
+        <item name="android:textColor">@color/letra_pipboy</item>
+        <item name="android:textSize">8pt</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="textoBoton">
+        <item name="android:textColor">@color/letra_pipboy</item>
         <item name="android:background">@color/boton</item>
-        <item name="android:textSize">11pt</item>
+        <item name="android:textSize">8pt</item>
     </style>
 
 </resources>

@@ -59,7 +59,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:text="@string/dialog_encontados"
-            style="@style/textomediano"
+            style="@style/letra"
             android:layout_weight="0.5"
             android:id="@+id/nuevos"            />
         <TextView
@@ -80,5 +80,5 @@
         android:layout_height="0dp"
         android:id="@+id/b_buscar"
         android:text="@string/conectar"
-        style="@style/boton"/>
+        style="@style/textoBoton"/>
 </LinearLayout>

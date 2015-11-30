@@ -3,23 +3,23 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/Fondo1"
+    android:background="@color/letra_pipboy"
     android:id="@+id/principal"
     tools:context="app.biouno.upibi.ecgoe.Control">
 
     <!--Grafico -->
     <LinearLayout
-        android:layout_marginTop="5dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
-        android:layout_weight="2"
-        android:background="@color/subfondo"
+        android:id="@+id/graficar"
+        android:layout_marginTop="1dp"
+        android:layout_marginLeft="1dp"
+        android:layout_marginRight="1dp"
+        android:layout_weight="3"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="0dp">
 
         <ImageView
-            android:background="@color/black"
+            android:background="@color/fondo_pipboy"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/Grafica"
@@ -28,8 +28,8 @@
 
     <!--Telemetria y cocoro-->
     <LinearLayout
-        android:layout_margin="5dp"
-        android:background="@color/botones"
+        android:layout_margin="1dp"
+        android:background="@color/fondo_pipboy"
         android:layout_weight="1"
         android:orientation="horizontal"
         android:layout_width="match_parent"
@@ -39,7 +39,7 @@
             android:gravity="center"
             android:layout_gravity="center"
             android:layout_weight="3"
-            style="@style/textoPaciente"
+            style="@style/letra"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:textAppearance="?android:attr/textAppearanceLarge"
@@ -51,7 +51,7 @@
             android:gravity="center"
             android:layout_gravity="center"
             android:layout_weight="2"
-            style="@style/textogrande"
+            style="@style/letraSaludable"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:textAppearance="?android:attr/textAppearanceLarge"
@@ -60,6 +60,7 @@
 
         <!--Cocoro-->
         <ImageView
+            android:layout_margin="7dp"
             android:src="@drawable/kokoro"
             android:gravity="center"
             android:layout_gravity="center"
@@ -81,7 +82,7 @@
                 android:layout_marginRight="5dp"
                 android:layout_gravity="center"
                 android:layout_weight="1"
-                style="@style/boton"
+                style="@style/textoBoton"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:text="Refresh"
@@ -90,7 +91,8 @@
             <TextView
                 android:layout_margin="5dp"
                 android:layout_gravity="center"
-                style="@style/textomediano"
+                android:gravity="center"
+                style="@style/textoBoton"
                 android:layout_weight="1"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
