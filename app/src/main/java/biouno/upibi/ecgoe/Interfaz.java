@@ -253,7 +253,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
             a=0;
         }
         tf = to + paso;
-        vf = vectorECG[a];
+        vf = 240-vectorECG[a];
         canvas.drawLine(to,vo,tf,vf,paint);
         to = to + paso;
         vo = vf;
@@ -300,21 +300,21 @@ public class Interfaz extends Activity implements View.OnClickListener{
         }
         animador = ObjectAnimator.ofFloat(corazon, "alpha", 1, 0.25f,1);
         animador.setRepeatMode(ObjectAnimator.RESTART);
-        animador.setDuration(750);
+        animador.setDuration(500);
         animador.setRepeatCount(ObjectAnimator.INFINITE);
         animador.setInterpolator(lineal);
         set.play(animador);
 
         animador = ObjectAnimator.ofFloat(corazon, "scaleX", 1, 0.8f, 1);
         animador.setRepeatMode(ObjectAnimator.RESTART);
-        animador.setDuration(750);
+        animador.setDuration(500);
         animador.setRepeatCount(ObjectAnimator.INFINITE);
         animador.setInterpolator(lineal);
         set1.play(animador);
 
         animador = ObjectAnimator.ofFloat(corazon,"scaleY",1, 0.8f, 1);
         animador.setRepeatMode(ObjectAnimator.RESTART);
-        animador.setDuration(750);
+        animador.setDuration(500);
         animador.setRepeatCount(ObjectAnimator.INFINITE);
         animador.setInterpolator(lineal);
         set2.play(animador);
