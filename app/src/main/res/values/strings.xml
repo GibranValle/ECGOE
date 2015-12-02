@@ -25,9 +25,12 @@
     <!-- textos DeviceList-->
     <string name="dialog_vinculados">Dispositivos Vinculados</string>
     <string name="dialog_encontados">Dispositivos Encontrados</string>
+
+    <!-- textos Menu-->
     <string name="conectar">Conectar</string>
     <string name="visible">Hacer Visible</string>
     <string name="datos">Editar Datos Paciente</string>
+    <string name="demo">Demo</string>
 
 
 </resources>

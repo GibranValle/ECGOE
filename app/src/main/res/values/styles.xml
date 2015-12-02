@@ -7,7 +7,7 @@
 
     <style name="titulo">
         <item name="android:textColor">@color/GREEN2</item>
-        <item name="android:textSize">14pt</item>
+        <item name="android:textSize">11pt</item>
         <item name="android:gravity">center</item>
         <item name="android:textStyle">bold</item>
     </style>

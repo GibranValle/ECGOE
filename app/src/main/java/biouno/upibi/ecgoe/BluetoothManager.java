@@ -395,6 +395,7 @@ public class BluetoothManager {
             mmSocket = tmp;
         }
 
+
         public void run() {
             //Log.i(TAG, "BEGIN mConnectThread SocketType:" + mSocketType);
             setName("ConnectThread" + mSocketType);
@@ -462,23 +463,71 @@ public class BluetoothManager {
 
         }
 
-
+        public void run()
+        {
+            if (D) Log.e(TAG, "ConnectedThread run");
+            while (true)
+            {
+                try
+                {
+                    //byte[] buffer = new byte[128];
+                    String readMessage;
+                    byte[] buffer;
+                    int bytes;
+                    int availableBytes = mmInStream.available();
+                    if (availableBytes > 4)
+                    {
+                        try
+                        {
+                            // Read from the InputStream
+                            buffer = new byte[availableBytes];
+                            bytes = mmInStream.read(buffer);
+                            readMessage = new String(buffer, 0, bytes);
+                            //Log.e(TAG, "readMessage: " + readMessage);
+                        }
+                        catch (IOException e)
+                        {
+                            Log.e(TAG, "disconnected", e);
+                            break;
+                        }
+                        // Send the obtained bytes to the UI Activity
+                        mHandler.obtainMessage(Interfaz.MESSAGE_READ, bytes, -1, readMessage).sendToTarget();
+                    }
+                    else
+                    {
+                        //SystemClock.sleep(10);
+                    }
+                }
+                catch (IOException e)
+                {
+                    if (D) Log.e(TAG, "disconnected", e);
+                    connectionLost();
+                    //e.printStackTrace();
+                    break;
+                }
+            }
+        }
+        /*
         public void run() {
-            if (D) Log.i(TAG, "ConnectedThread run");
-            byte[] buffer = new byte[128];
+            if (D) Log.e(TAG, "ConnectedThread run");
+            int bufferSize=1024;
+            byte[] buffer = new byte[bufferSize];
             int bytes;
             StringBuilder readMessage = new StringBuilder();
             while (true) {
                 try {
                     // Read from the InputStream
                     bytes = mmInStream.read(buffer);        // Get number of bytes and message in "buffer"
+                    Log.i(TAG, "bytes:  " + bytes);
                     String readed = new String(buffer, 0, bytes);
+                    Log.i(TAG, "readed: " + readed);
                     readMessage.append(readed);
+                    Log.i(TAG, "readMessagesinfiltro: " + readed);
 
                     if(readed.contains("\r\n")||readed.contains("\n")||readed.contains("\r"))
                     {
                         mHandler.obtainMessage(Interfaz.MESSAGE_READ, bytes, -1, readMessage.toString()).sendToTarget();
-                        Log.i(TAG, "armado sin error: " + readMessage);
+                        Log.i(TAG, "readMessageFiltro: " + readMessage);
                         //mHandler.obtainMessage(Interfaz.MESSAGE_READ, bytes, -1, readMessage.toString()).sendToTarget();
                         readMessage.delete(0,readMessage.length());
                     }
@@ -490,6 +539,7 @@ public class BluetoothManager {
                 }
             }
         }
+        */
 
         /**
          * Write to the connected OutStream.

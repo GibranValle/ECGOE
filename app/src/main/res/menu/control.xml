@@ -13,4 +13,8 @@
     <item android:id="@+id/datos"
         android:orderInCategory="3"
         android:title="@string/datos"/>
+
+    <item android:id="@+id/demo"
+        android:orderInCategory="3"
+        android:title="@string/demo"/>
 </menu>

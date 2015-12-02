@@ -76,7 +76,10 @@ public class Interfaz extends Activity implements View.OnClickListener{
 
     final Handler handler = new Handler();
     String nombrePaciente, edadPaciente;
+    String lectura;
+    int punto;
     boolean usuario = true;
+    int toggle = 0;
     int to, tf, vo, vf;
     int xo,x1,yo,y1,paso;
     int alto, ancho, origeny,a;
@@ -118,6 +121,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
         yo = 0;
         y1=alto;
         a = 0;
+        to = 0;
 
         origeny = alto/2;
         boton.setOnClickListener(this);
@@ -150,8 +154,6 @@ public class Interfaz extends Activity implements View.OnClickListener{
         Log.d(TAG, "RESUMIENDO");
         // carga datos y los despliega en el textview
         cargarDatos();
-        //onResume we start our timer so it can start when the app comes from the background
-        startTimer();
 
         //////////////////*BLUETOOH ////////////////*/////////////////*/////////////////*/////////////////*/
         if (!BTadaptador.isEnabled())//habilitar si no lo esta
@@ -204,9 +206,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
     @Override
     public void onClick(View v)
     {
-        Vibrator vibrador = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);        // Vibrate for 500 milliseconds
-        vibrador.vibrate(100);
-
+        vibrar(100);
         if(v.getId() == R.id.refresh) // FRECUENCIA PORTADORA
         {
             empezarCanvas();
@@ -222,9 +222,13 @@ public class Interfaz extends Activity implements View.OnClickListener{
         timer.schedule(timerTask, 0, 4); //
     }
 
-    public void stoptimertask(View v) {
+    public void stoptimertask() {
         //parar el timer, si no esta vacio
-
+        if (timer != null)
+        {
+            timer.cancel();
+            timer = null;
+        }
     }
 
     public void initializeTimerTask() {
@@ -242,6 +246,27 @@ public class Interfaz extends Activity implements View.OnClickListener{
     }
 
     //* METODOS PERSONALIZADOS
+    void graficarPunto(int punto)
+    {
+        if (to == 0)
+        {
+            corazon.setVisibility(View.VISIBLE);
+            empezarCanvas();
+        }
+        if (to == ancho)
+        {
+            empezarCanvas();
+            to = 0;
+        }
+        // PRIMER PUNTO A GRAFICAR
+        tf = to + paso;
+        vf = ancho-punto;
+        canvas.drawLine(to,vo,tf,vf,paint);
+        to = to + paso;
+        vo = vf;
+
+    }
+
     void graficar()
     {
         if (to == ancho)
@@ -340,6 +365,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
         edadPaciente = respaldo.getString("patientAge", "Edad");
         Log.d(TAG, "Edad cargado: "+edadPaciente);
         paciente.setText(nombrePaciente +"\n"+edadPaciente+" años");
+        paso = respaldo.getInt("paso",1);
     }
     //** METODOS PERSONALIZADOS
 
@@ -366,6 +392,22 @@ public class Interfaz extends Activity implements View.OnClickListener{
 
             case R.id.datos: //Modificar Datos Paciente
                 startActivity(new Intent(this,DatosPaciente.class));
+                break;
+            case R.id.demo:
+                if(toggle == 0)
+                {
+                    toggle = 1;
+                    empezarCanvas();
+                    startTimer();
+                    corazon.setVisibility(View.VISIBLE);
+                }
+                else if (toggle == 1)
+                {
+                    toggle = 0;
+                    empezarCanvas();
+                    stoptimertask();
+                    corazon.setVisibility(View.INVISIBLE);
+                }
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -477,6 +519,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
                             estado.setText(R.string.bt_DC);
                             estado.setBackgroundColor(0x43ff0000);
                             Log.d(TAG, " BT DESCONECTADO");
+                            enviarMensaje("F");
                             break;
                     }
                     break;
@@ -486,30 +529,46 @@ public class Interfaz extends Activity implements View.OnClickListener{
                     break;
                 case MESSAGE_READ:
                     String readMessage = (String) msg.obj;
-                    //Log.e(TAG, "armado2: " + readMessage + "prueba");
+                    //Log.e(TAG, "mensaje llegando: " + readMessage);
+                    int largo = readMessage.length();
+                    int inicio = readMessage.indexOf("V");
+                    int fin = inicio + 4;
+                    int palabrasEnteras = largo/4;
 
-                    if(readMessage.endsWith("\n"))
+                    //Log.e(TAG, "largo : " + largo +" inicio: "+inicio +" fin: "+fin);
+                    if (largo >= 4 && largo <= 1000 && inicio >= 0)
                     {
-                        if(readMessage.startsWith("H"))
+                        if(!readMessage.endsWith("\r") || !readMessage.endsWith("\n"))
                         {
-                            String valor = readMessage.substring(1,5);
-                            float valors = Float.parseFloat(valor)/100;
+                            palabrasEnteras = palabrasEnteras - 1;
                         }
-                        else if(readMessage.startsWith("V"))
+                        //Log.e(TAG, "palabras enteras : " + palabrasEnteras);
+                        for (int j=1;j<=palabrasEnteras;j++)
                         {
-                            String valor = readMessage.substring(1,5);
-                            float valors = Float.parseFloat(valor)/100;
-                        }
-                        else if(readMessage.startsWith("P"))
-                        {
-                            vibrar(100);
-                            barra.setProgress(0);
-                            usuario = false; // PARO DE EMERGENCIA, NO FUE USUARIO
-                        }
-                        else
-                        {
+
+                            lectura = readMessage.substring(inicio+1,fin);
+                            Log.e(TAG, "palabraSeparada : " + lectura+" punto: "+punto);
+                            readMessage = readMessage.replaceFirst(readMessage,readMessage);
+                            inicio =inicio +4;
+                            fin = fin + 4;
+                            punto = Integer.parseInt(lectura);
+                            graficarPunto(punto);
                         }
                     }
+                    /*
+                    //Log.e(TAG, "largo : " + largo +" inicio: "+inicio +" fin: "+fin);
+                    if (largo >= 4 && largo <= 200 && inicio > 0 && fin > 0 && fin > inicio)
+                    {
+                        int palabrasEnteras = largo/4;
+                        for (int j=0; j<= palabrasEnteras; j++)
+                        {
+                            Log.e(TAG, "largo : " + largo +" inicio: "+inicio +" fin: "+fin);
+                            lectura.substring(inicio,fin);
+                        }
+                        lectura = readMessage;
+                    }
+                    */
+
                     break;
                 case MESSAGE_DEVICE_NAME:
                     // save the connected device's name
