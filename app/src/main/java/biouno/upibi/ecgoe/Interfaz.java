@@ -256,12 +256,12 @@ public class Interfaz extends Activity implements View.OnClickListener{
         if (to == ancho)
         {
             empezarCanvas();
-            to = 0;
         }
         // PRIMER PUNTO A GRAFICAR
         tf = to + paso;
-        vf = ancho-punto;
+        vf = alto-punto;
         canvas.drawLine(to,vo,tf,vf,paint);
+        Log.w(TAG, "graficando puntos: "+" to "+to + " vo: "+vo +" tf: "+tf + " vf: "+vf);
         to = to + paso;
         vo = vf;
 
@@ -365,7 +365,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
         edadPaciente = respaldo.getString("patientAge", "Edad");
         Log.d(TAG, "Edad cargado: "+edadPaciente);
         paciente.setText(nombrePaciente +"\n"+edadPaciente+" años");
-        paso = respaldo.getInt("paso",1);
+        paso = Integer.parseInt(respaldo.getString("paso", "1"));
     }
     //** METODOS PERSONALIZADOS
 

@@ -24,8 +24,8 @@ public class DatosPaciente extends Activity {
     private static final boolean D = true;
 
     Button actualizar, cancelar;
-    String nombrePaciente, edadPaciente;
-    TextView editPaciente, editEdad;
+    String nombrePaciente, edadPaciente, paso;
+    TextView editPaciente, editEdad, editPaso;
     Switch incrementos;
 
     @Override
@@ -38,6 +38,7 @@ public class DatosPaciente extends Activity {
 
         editPaciente = (TextView) findViewById(R.id.paciente_nombre);
         editEdad = (TextView) findViewById(R.id.paciente_edad);
+        editPaso = (TextView) findViewById(R.id.edit_paso);
         actualizar = (Button) findViewById(R.id.b_actualizar);
         cancelar = (Button) findViewById(R.id.b_cancelar);
         incrementos = (Switch) findViewById(R.id.switch1);
@@ -47,9 +48,11 @@ public class DatosPaciente extends Activity {
         // cargar la clave en la variable clave, o 0000 por default (no encontrada, etc);
         nombrePaciente = respaldo.getString("patientName","Paciente");
         edadPaciente = respaldo.getString("patientAge","Edad");
+        paso = respaldo.getString("paso", "1");
 
         editPaciente.setText(nombrePaciente);
         editEdad.setText(edadPaciente);
+        editPaso.setText(paso);
 
         incrementos.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -68,10 +71,12 @@ public class DatosPaciente extends Activity {
 
                 nombrePaciente = editPaciente.getText().toString();
                 edadPaciente = editEdad.getText().toString();
+                paso = editPaso.getText().toString();
 
                 SharedPreferences.Editor editor = respaldo.edit();
                 editor.putString("patientName", nombrePaciente);
                 editor.putString("patientAge", edadPaciente);
+                editor.putString("paso", paso);
 
                 if(editor.commit())
                 {

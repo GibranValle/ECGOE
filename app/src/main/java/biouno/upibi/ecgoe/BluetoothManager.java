@@ -472,7 +472,8 @@ public class BluetoothManager {
                 {
                     //byte[] buffer = new byte[128];
                     String readMessage;
-                    byte[] buffer;
+                    byte[] buffer = new byte[4096];
+
                     int bytes;
                     int availableBytes = mmInStream.available();
                     if (availableBytes > 4)
@@ -480,7 +481,6 @@ public class BluetoothManager {
                         try
                         {
                             // Read from the InputStream
-                            buffer = new byte[availableBytes];
                             bytes = mmInStream.read(buffer);
                             readMessage = new String(buffer, 0, bytes);
                             //Log.e(TAG, "readMessage: " + readMessage);

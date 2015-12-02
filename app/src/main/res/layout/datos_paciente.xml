@@ -129,7 +129,7 @@
             android:layout_width="0dp"
             android:textColorHint="@color/GREEN3"
             android:layout_height="match_parent"
-            android:layout_weight="5"
+            android:layout_weight="3"
             android:inputType="numberDecimal"
             android:ems="10"
             android:gravity="center"
@@ -137,6 +137,35 @@
             android:id="@+id/paciente_edad" />
     </LinearLayout>
 
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center">
+        <TextView
+            android:gravity="left|center"
+            style="@style/letramediana"
+            android:layout_marginBottom="10dp"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Paso: "
+            android:id="@+id/pasitoto"
+            />
+        <EditText
+            android:layout_width="0dp"
+            android:textColorHint="@color/GREEN3"
+            android:layout_height="match_parent"
+            android:layout_weight="3"
+            android:inputType="numberDecimal"
+            android:ems="10"
+            android:gravity="center"
+            android:hint="enteros"
+            android:id="@+id/edit_paso" />
+    </LinearLayout>
 
     <LinearLayout
         android:orientation="horizontal"
@@ -163,6 +192,7 @@
             style="@style/textoBoton"
             android:id="@+id/b_cancelar" />
     </LinearLayout>
+
 
     <Switch
         android:visibility="gone"
