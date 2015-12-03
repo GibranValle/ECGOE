@@ -170,6 +170,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
         }
         // configurar el servicio de BT
         if (BTservice == null) configurar();
+        empezarCanvas();
         //////////////////*BLUETOOH ////////////////*/////////////////*/////////////////*/////////////////*/
     }
     protected void onStop() {
@@ -256,6 +257,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
         if (to == ancho)
         {
             empezarCanvas();
+            vo = vf;
         }
         // PRIMER PUNTO A GRAFICAR
         tf = to + paso;
@@ -306,7 +308,6 @@ public class Interfaz extends Activity implements View.OnClickListener{
 
         paint.setStrokeWidth(3);
 
-        paso = 1;
         to = 0;
         vo = origeny;
         tf = to+paso;
