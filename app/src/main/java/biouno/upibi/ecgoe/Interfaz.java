@@ -13,6 +13,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -24,7 +27,6 @@ import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -62,11 +64,10 @@ public class Interfaz extends Activity implements View.OnClickListener{
     Bitmap bitmap;
     Canvas canvas;
     Paint paint;
-    TextView estado, paciente;
+    TextView estado, paciente, salud;
     Intent i;
     String TAG = "Interfaz";
     SharedPreferences respaldo;
-    SeekBar barra;
     Button boton;
     ObjectAnimator animador;
     LinearInterpolator lineal;
@@ -75,8 +76,22 @@ public class Interfaz extends Activity implements View.OnClickListener{
     TimerTask timerTask;
 
     final Handler handler = new Handler();
+
     String nombrePaciente, edadPaciente;
     String lectura;
+
+    MediaPlayer mp;
+    // //// MULTIMEDIA //////
+    SoundPool soundPool;
+    int bip, paro;
+    boolean sonando = false;
+    boolean cargado = true;
+    long inicio, periodo, amplitud; // MEDIR TIEMPO ENTRE QRS
+    float FC;
+    boolean alarmaParo = false;
+
+    int error; // PARA DETERMINAR QRS
+    int max, contador, min;
     int punto;
     boolean usuario = true;
     int toggle = 0;
@@ -102,16 +117,40 @@ public class Interfaz extends Activity implements View.OnClickListener{
         Log.d(TAG, " onCreate ");
         setContentView(R.layout.activity_interfaz);
 
+        soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC , 0);
+
+        soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+            public void onLoadComplete(SoundPool sp, int sid, int status) {
+                Log.d(getClass().getSimpleName(), "Sound is now loaded");
+                cargado = true;
+            }});
+
+
+        bip = soundPool.load(this, R.raw.bip, 0);
+        paro = soundPool.load(this, R.raw.paro, 0);
+
+
         set = new AnimatorSet();
         set1 = new AnimatorSet();
         set2 = new AnimatorSet();
         set3 = new AnimatorSet();
+
+        mp = MediaPlayer.create(this, R.raw.paro);
+        mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        mp.setLooping(true);
+
+        error  = 0;
+        max = 0;
+        min = 240;
+        inicio = 0;
+        contador = 0;
 
         estado = (TextView) findViewById(R.id.estado);
         paciente = (TextView) findViewById(R.id.IDpaciente);
         corazon = (ImageView) findViewById(R.id.corazon);
         boton = (Button) findViewById(R.id.refresh);
         espacio = (ImageView) findViewById(R.id.Grafica);
+        salud = (TextView) findViewById(R.id.saludPaciente);
 
         // Acondicionamiento del canvas para empezar a graficar
         alto = 240;
@@ -122,6 +161,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
         y1=alto;
         a = 0;
         to = 0;
+
 
         origeny = alto/2;
         boton.setOnClickListener(this);
@@ -149,6 +189,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
         }
         //////////////////*BLUETOOH ////////////////*/////////////////*/////////////////*/////////////////*/
     }
+
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "RESUMIENDO");
@@ -202,6 +243,10 @@ public class Interfaz extends Activity implements View.OnClickListener{
                 Toast.makeText(this, "Apagando Bluetooth", Toast.LENGTH_SHORT).show();
             }
         }
+        if(alarmaParo)
+        {
+            apagarAlarma();
+        }
     }
 
     @Override
@@ -212,8 +257,11 @@ public class Interfaz extends Activity implements View.OnClickListener{
         {
             empezarCanvas();
         }
+        max = 0;
+        min = 240;
     }
 
+    //////////////////////////////////////* METODOS PARA TIMER *////////////////////////////////////
     public void startTimer() {
         //instanciar nuevo timer
         timer = new Timer();
@@ -245,28 +293,61 @@ public class Interfaz extends Activity implements View.OnClickListener{
             }
         };
     }
+    //////////////////////////////////////* METODOS PARA TIMER *////////////////////////////////////
 
-    //* METODOS PERSONALIZADOS
+
+    //////////////////////////////////////* MEDIA PLAYER *////////////////////////////////////
+    public void sonidoAlarma()
+    {
+        if(!mp.isPlaying())
+        {
+            mp.start();
+        }
+    }
+
+
+    public void apagarAlarma()
+    {
+        if(mp.isPlaying() || mp.isLooping())
+        {
+            mp.stop();
+            mp.release();
+            mp = MediaPlayer.create(this, R.raw.paro);
+        }
+    }
+
+    public void sonidoBip()
+    {
+        soundPool.play(bip, 0.5f, 0.5f, 1, 0, 1);
+    }
+    //////////////////////////////////////* MEDIA PLAYER */////////////////////////////////////////
+
+
+    //////////////////////////////////* METODOS PERSONALIZADOS /////////////////////////////////////
     void graficarPunto(int punto)
     {
         if (to == 0)
         {
             corazon.setVisibility(View.VISIBLE);
             empezarCanvas();
+            error  = 0;
         }
-        if (to == ancho)
+        if (to >= ancho)
         {
+            error  = 0;
             empezarCanvas();
             vo = vf;
         }
         // PRIMER PUNTO A GRAFICAR
         tf = to + paso;
+        vf = punto;
+        calcularQRS();
+
         vf = alto-punto;
         canvas.drawLine(to,vo,tf,vf,paint);
-        Log.w(TAG, "graficando puntos: "+" to "+to + " vo: "+vo +" tf: "+tf + " vf: "+vf);
+        //Log.w(TAG, "graficando puntos: "+" to "+to + " vo: "+vo +" tf: "+tf + " vf: "+vf);
         to = to + paso;
         vo = vf;
-
     }
 
     void graficar()
@@ -275,16 +356,93 @@ public class Interfaz extends Activity implements View.OnClickListener{
         {
             empezarCanvas();
         }
-        if(a==250)
+        if(a>=250)
         {
             a=0;
         }
         tf = to + paso;
-        vf = 240-vectorECG[a];
+        vf = alto-vectorECG[a];
+
+        calcularQRS();
+
         canvas.drawLine(to,vo,tf,vf,paint);
         to = to + paso;
         vo = vf;
         a = a+1;
+
+
+    }
+
+    public void calcularQRS()
+    {
+        Log.w(TAG, "max; "+max +" min: "+min+" amplitud: "+amplitud+ " contador: "+contador +"vf: "+ vf +" p: "+(240-vf));
+        contador = contador + 1;
+        if (contador > 250)
+        {
+            max = 0;
+            min = 240;
+            contador = 0;
+        }
+
+        if(vf >= max)
+        {
+            max = vf;
+        }
+
+        if(vf <= min)
+        {
+            min = vf;
+        }
+
+        amplitud = max - min;
+        // VALIDAR AMPLITUD
+        if(amplitud > 0 && amplitud <240)
+        {
+            if (amplitud < 30)
+            {
+                salud.setText("BPM: - - " + "\n"+"Asistolia");
+                alarmaParo = true;
+                sonidoAlarma();
+            }
+            else if (amplitud >= 30 && amplitud < 60)
+            {
+                salud.setText("BPM: - - " + "\n"+"Fibrilacion");
+                alarmaParo = false;
+                apagarAlarma();
+            }
+
+            if (vf >= max && amplitud >= 60)
+            {
+                alarmaParo = false;
+                apagarAlarma();
+                Log.e(TAG,"Posiblmente aqui hay un QRS");
+                periodo = System.currentTimeMillis() - inicio;
+                inicio = System.currentTimeMillis();
+                Log.e(TAG,"periodo: "+periodo);
+                Log.i(TAG,"max: " +max+" amplitud: " +(max-min));
+                // VALIRAR RITMO CARDIACO
+                if (periodo > 200 && periodo < 2000)
+                {
+                    Log.i(TAG, "Hay un QRS valido");
+                    sonidoBip();
+                    // calcular frecuencia cardiaca
+                    FC = Math.round(1000*60/periodo);
+                    Log.i(TAG, "FC: "+FC);
+                    if ( FC < 50 )
+                    {
+                        salud.setText("BPM: "+(int) FC + "\n"+"Bradicardia");
+                    }
+                    else if ( FC > 50 && FC < 100)
+                    {
+                        salud.setText("BPM: "+(int) FC + "\n"+"Saludable");
+                    }
+                    else if ( FC > 100)
+                    {
+                        salud.setText("BPM: "+(int) FC + "\n"+"Taquicardia");
+                    }
+                }
+            }
+        }
     }
 
     void empezarCanvas()
@@ -548,7 +706,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
                         {
 
                             lectura = readMessage.substring(inicio+1,fin);
-                            Log.e(TAG, "palabraSeparada : " + lectura+" punto: "+punto);
+                            //Log.e(TAG, "palabraSeparada : " + lectura+" punto: "+punto);
                             readMessage = readMessage.replaceFirst(readMessage,readMessage);
                             inicio =inicio +4;
                             fin = fin + 4;
@@ -556,20 +714,6 @@ public class Interfaz extends Activity implements View.OnClickListener{
                             graficarPunto(punto);
                         }
                     }
-                    /*
-                    //Log.e(TAG, "largo : " + largo +" inicio: "+inicio +" fin: "+fin);
-                    if (largo >= 4 && largo <= 200 && inicio > 0 && fin > 0 && fin > inicio)
-                    {
-                        int palabrasEnteras = largo/4;
-                        for (int j=0; j<= palabrasEnteras; j++)
-                        {
-                            Log.e(TAG, "largo : " + largo +" inicio: "+inicio +" fin: "+fin);
-                            lectura.substring(inicio,fin);
-                        }
-                        lectura = readMessage;
-                    }
-                    */
-
                     break;
                 case MESSAGE_DEVICE_NAME:
                     // save the connected device's name
