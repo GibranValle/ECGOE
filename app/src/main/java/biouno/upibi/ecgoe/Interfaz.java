@@ -86,7 +86,8 @@ public class Interfaz extends Activity implements View.OnClickListener{
     int bip, paro;
     boolean sonando = false;
     boolean cargado = true;
-    long inicio, periodo, amplitud; // MEDIR TIEMPO ENTRE QRS
+    long inicio, periodo; // MEDIR TIEMPO ENTRE QRS
+    int amplitud;
     float FC;
     boolean alarmaParo = false;
 
@@ -344,6 +345,9 @@ public class Interfaz extends Activity implements View.OnClickListener{
         calcularQRS();
 
         vf = alto-punto;
+        Log.w(TAG,"vf antes: "+vf +" amplitud: "+amplitud);
+        //vf = vf - (vf-120+amplitud/2);
+        Log.w(TAG,"vf despues: "+vf);
         canvas.drawLine(to,vo,tf,vf,paint);
         //Log.w(TAG, "graficando puntos: "+" to "+to + " vo: "+vo +" tf: "+tf + " vf: "+vf);
         to = to + paso;
