@@ -72,10 +72,11 @@ public class Interfaz extends Activity implements View.OnClickListener{
     ObjectAnimator animador;
     LinearInterpolator lineal;
     AnimatorSet set,set1,set2,set3;
-    Timer timer;
-    TimerTask timerTask;
+    Timer timer, timerAlarma;
+    TimerTask timerTask, alarmaTask;
 
     final Handler handler = new Handler();
+    final Handler handler2 = new Handler();
 
     String nombrePaciente, edadPaciente;
     String lectura;
@@ -86,10 +87,11 @@ public class Interfaz extends Activity implements View.OnClickListener{
     int bip, paro;
     boolean sonando = false;
     boolean cargado = true;
+    boolean picoP = false;
+    boolean picoN = false;
     long inicio, periodo; // MEDIR TIEMPO ENTRE QRS
     int amplitud;
     float FC;
-    boolean alarmaParo = false;
 
     int error; // PARA DETERMINAR QRS
     int max, contador, min;
@@ -98,7 +100,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
     int toggle = 0;
     int to, tf, vo, vf;
     int xo,x1,yo,y1,paso;
-    int alto, ancho, origeny,a;
+    int alto, ancho, origeny,a, inversion;
     final int vectorECG[]={120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,
             120,120,121,122,124,126,127,129,131,133,135,137,139,141,142,143,144,144,144,143,142,
             140,138,136,133,131,128,126,124,122,121,120,120,120,120,120,120,120,120,120,120,120,120,
@@ -219,6 +221,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
         super.onStop();
         Log.d(TAG, "DETENIENDO");
         enviarMensaje("F");
+        stoptimertask();
         if (BTservice != null)  //si ya se configuró el servicio de BT
         {
             //iniciar si no se ha iniciado
@@ -244,10 +247,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
                 Toast.makeText(this, "Apagando Bluetooth", Toast.LENGTH_SHORT).show();
             }
         }
-        if(alarmaParo)
-        {
-            apagarAlarma();
-        }
+        muteAlarma();
     }
 
     @Override
@@ -260,6 +260,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
         }
         max = 0;
         min = 240;
+        pararAlarma();
     }
 
     //////////////////////////////////////* METODOS PARA TIMER *////////////////////////////////////
@@ -294,6 +295,51 @@ public class Interfaz extends Activity implements View.OnClickListener{
             }
         };
     }
+
+    public void empezarAlarma() {
+        sonando = true;
+        Log.e(TAG,"empezando alarma: ");
+        //instanciar nuevo timer
+        timerAlarma = new Timer();
+        //inicializar el timer
+        alarmaTimerTask();
+        //esperar 0ms para empezar, repetir cada 100ms
+        timerAlarma.schedule(alarmaTask, 2000, 50000); //
+    }
+
+    public void pararAlarma() {
+        //parar el timer, si no esta vacio
+        Log.e(TAG,"parando alarma: ");
+        if (timerAlarma != null)
+        {
+            timerAlarma.cancel();
+            timerAlarma = null;
+        }
+        if(sonando)
+        {
+            muteAlarma();
+            sonando = false;
+            corazon.setVisibility(View.VISIBLE);
+        }
+    }
+
+    public void alarmaTimerTask() {
+        alarmaTask = new TimerTask() {
+            public void run() {
+                //use a handler to run a toast that shows the current timestamp
+                handler2.post(new Runnable() {
+                    public void run() {
+                        //aquí va la acción a realizar
+                        salud.setText("BPM: - -" +"\n"+"Asistolia");
+                        sonidoAlarma();
+                        max = 0;
+                        min = 240;
+                        corazon.setVisibility(View.INVISIBLE);
+                    }
+                });
+            }
+        };
+    }
     //////////////////////////////////////* METODOS PARA TIMER *////////////////////////////////////
 
 
@@ -307,13 +353,15 @@ public class Interfaz extends Activity implements View.OnClickListener{
     }
 
 
-    public void apagarAlarma()
+    public void muteAlarma()
     {
         if(mp.isPlaying() || mp.isLooping())
         {
             mp.stop();
             mp.release();
             mp = MediaPlayer.create(this, R.raw.paro);
+            mp.setLooping(true);
+            sonando = false;
         }
     }
 
@@ -331,7 +379,6 @@ public class Interfaz extends Activity implements View.OnClickListener{
         {
             corazon.setVisibility(View.VISIBLE);
             empezarCanvas();
-            error  = 0;
         }
         if (to >= ancho)
         {
@@ -343,11 +390,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
         tf = to + paso;
         vf = punto;
         calcularQRS();
-
         vf = alto-punto;
-        Log.w(TAG,"vf antes: "+vf +" amplitud: "+amplitud);
-        //vf = vf - (vf-120+amplitud/2);
-        Log.w(TAG,"vf despues: "+vf);
         canvas.drawLine(to,vo,tf,vf,paint);
         //Log.w(TAG, "graficando puntos: "+" to "+to + " vo: "+vo +" tf: "+tf + " vf: "+vf);
         to = to + paso;
@@ -356,7 +399,12 @@ public class Interfaz extends Activity implements View.OnClickListener{
 
     void graficar()
     {
-        if (to == ancho)
+        if (to == 0)
+        {
+            corazon.setVisibility(View.VISIBLE);
+            empezarCanvas();
+        }
+        if (to >= ancho)
         {
             empezarCanvas();
         }
@@ -366,9 +414,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
         }
         tf = to + paso;
         vf = alto-vectorECG[a];
-
         calcularQRS();
-
         canvas.drawLine(to,vo,tf,vf,paint);
         to = to + paso;
         vo = vf;
@@ -379,74 +425,58 @@ public class Interfaz extends Activity implements View.OnClickListener{
 
     public void calcularQRS()
     {
-        Log.w(TAG, "max; "+max +" min: "+min+" amplitud: "+amplitud+ " contador: "+contador +"vf: "+ vf +" p: "+(240-vf));
-        contador = contador + 1;
-        if (contador > 250)
+        inversion = alto - vf;
+        //Log.w(TAG, "max; "+max +" min: "+min+" amplitud: "+amplitud+ " contador: "+contador + " punto: "+inversion);
+
+        if( inversion <= min )
         {
-            max = 0;
-            min = 240;
-            contador = 0;
+            min = inversion;
         }
 
-        if(vf >= max)
+        if( inversion >= max )
         {
-            max = vf;
-        }
-
-        if(vf <= min)
-        {
-            min = vf;
+            max = inversion;
         }
 
         amplitud = max - min;
-        // VALIDAR AMPLITUD
-        if(amplitud > 0 && amplitud <240)
-        {
-            if (amplitud < 30)
-            {
-                salud.setText("BPM: - - " + "\n"+"Asistolia");
-                alarmaParo = true;
-                sonidoAlarma();
-            }
-            else if (amplitud >= 30 && amplitud < 60)
-            {
-                salud.setText("BPM: - - " + "\n"+"Fibrilacion");
-                alarmaParo = false;
-                apagarAlarma();
-            }
 
-            if (vf >= max && amplitud >= 60)
+        // DETECCION DE QRS
+        if(inversion >= max-1 && amplitud > 60)
+        {
+            // DETECCION DE QRS, PARAR ALARMA DE ASISTOLIA
+            pararAlarma();
+            Log.i(TAG,"QRS detectado, parando alarma "+" SONANDO: "+sonando);
+
+            // INICIA EL TIMER PARA DETECCION DE ASISTOLIA, DEBE DETENERSE CADA QUE ENCUENTRA QRS
+            empezarAlarma();
+            Log.i(TAG,"RECIBIENDO DATOS, ESPERANDO ASISTOLIA");
+            periodo = System.currentTimeMillis() - inicio;
+            inicio = System.currentTimeMillis();
+            if(periodo > 200 && periodo  <2000)
             {
-                alarmaParo = false;
-                apagarAlarma();
-                Log.e(TAG,"Posiblmente aqui hay un QRS");
-                periodo = System.currentTimeMillis() - inicio;
-                inicio = System.currentTimeMillis();
-                Log.e(TAG,"periodo: "+periodo);
-                Log.i(TAG,"max: " +max+" amplitud: " +(max-min));
-                // VALIRAR RITMO CARDIACO
-                if (periodo > 200 && periodo < 2000)
+                sonidoBip();
+                max = 0;
+                min = 240;
+                FC = Math.round(1000*60/periodo);
+                //Log.e(TAG,"QRS encontrado periodo: "+periodo +" amplitud: "+amplitud+" FC: "+FC);
+                if(FC <50)
                 {
-                    Log.i(TAG, "Hay un QRS valido");
-                    sonidoBip();
-                    // calcular frecuencia cardiaca
-                    FC = Math.round(1000*60/periodo);
-                    Log.i(TAG, "FC: "+FC);
-                    if ( FC < 50 )
-                    {
-                        salud.setText("BPM: "+(int) FC + "\n"+"Bradicardia");
-                    }
-                    else if ( FC > 50 && FC < 100)
-                    {
-                        salud.setText("BPM: "+(int) FC + "\n"+"Saludable");
-                    }
-                    else if ( FC > 100)
-                    {
-                        salud.setText("BPM: "+(int) FC + "\n"+"Taquicardia");
-                    }
+                    salud.setText("BPM: "+(int)FC +"\n"+"Bradicardia");
+
+                }
+                else if(FC > 50 && FC < 100)
+                {
+                    salud.setText("BPM: "+(int)FC +"\n"+"Normal");
+
+                }
+                else if(FC >100)
+                {
+                    salud.setText("BPM: "+(int)FC +"\n"+"Taquicardia");
+
                 }
             }
         }
+
     }
 
     void empezarCanvas()
@@ -528,7 +558,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
         edadPaciente = respaldo.getString("patientAge", "Edad");
         Log.d(TAG, "Edad cargado: "+edadPaciente);
         paciente.setText(nombrePaciente +"\n"+edadPaciente+" años");
-        paso = Integer.parseInt(respaldo.getString("paso", "1"));
+        paso = Integer.parseInt(respaldo.getString("paso", "3"));
     }
     //** METODOS PERSONALIZADOS
 
@@ -667,8 +697,12 @@ public class Interfaz extends Activity implements View.OnClickListener{
                             estado.setBackgroundColor(0x4300ff00);
                             Log.d(TAG, " BT CONECTADO");
                             enviarMensaje("O");
+                            // INICIA EL TIMER PARA DETECCION DE ASISTOLIA, DEBE DETENERSE CADA QUE ENCUENTRA QRS
+                            empezarAlarma();
+                            Log.i(TAG,"RECIBIENDO DATOS, ESPERANDO ASISTOLIA");
                             break;
                         case BluetoothManager.STATE_CONNECTING:
+                            stoptimertask();
                             estado.setText(R.string.bt_CTING);
                             estado.setBackgroundColor(0x430000ff);
                             Log.d(TAG, " BT CONECTANDO");
