@@ -60,48 +60,46 @@ public class Interfaz extends Activity implements View.OnClickListener{
     private static final boolean D = true;
     /*//////////////////////// CONSTANTES PARA BLUETOOTH//////////////////////////////////////////*/
 
-    ImageView espacio, corazon;
-    Bitmap bitmap;
-    Canvas canvas;
-    Paint paint;
-    TextView estado, paciente, salud;
-    Intent i;
-    String TAG = "Interfaz";
-    SharedPreferences respaldo;
-    Button boton;
-    ObjectAnimator animador;
-    LinearInterpolator lineal;
-    AnimatorSet set,set1,set2,set3;
-    Timer timer, timerAlarma;
-    TimerTask timerTask, alarmaTask;
+    ///////////////////////////////* VARIABLES DE OBJETOS */////////////////////////////////////////
+    AnimatorSet set,set1,set2,set3;             // VARIABLE PARA ANIMACION DE CORAZON
+    Bitmap bitmap;                              // VARIABLE PARA CANVAS
+    Button boton;                               // VARIABLE PARA BOTON
+    Canvas canvas;                              // VARIABLE PARA CANVAS
+    final Handler handler = new Handler();      // VARIABLE PARA TIMER
+    final Handler handler2 = new Handler();     // VARIABLE PARA TIMER
+    ImageView espacio, corazon;                 // VARIABLES PARA ANIMACION DE CORAZON
+    Intent i;                                   // VARIABLE PARA CAMBIO DE ACTIVITY
+    LinearInterpolator lineal;                  // VARIABLE PARA ANIMACION DE CORAZON
+    MediaPlayer mp;                             // VARIABLES PARA SONIDO
+    ObjectAnimator animador;                    // VARIABLE PARA ANIMACION DE CORAZON
+    Paint paint;                                // VARIABLE PARA CANVAS
+    TextView estado, paciente, salud;           // VARIABLE PARA TEXTOS CAMBIANTES
+    SharedPreferences respaldo;                 // VARIABLE PARA RECUPERAR DATOS
+    SoundPool soundPool;                        // VARIABLE PARA SONIDO
+    String nombrePaciente, edadPaciente;        // VARIABLE PARA RECUPERAR DATOS
+    String lectura;                             // VARIABLE PARA COMUNICACION BLUETOOTH
+    String TAG = "Interfaz";                    // VARIABLE PARA DEBUG
+    Timer timer, timerAlarma;                   // VARIABLE PARA TIMER
+    TimerTask timerTask, alarmaTask;            // VARIABLE PARA TIMER
 
-    final Handler handler = new Handler();
-    final Handler handler2 = new Handler();
+    ///////////////////////////////////* VARIABLES  *//////////////////////////////////////////////
+    int bip, paro;                              // VARIABLE PARA SONIDO
+    boolean sonando,cargado;                    // VARIABLE PARA SONIDO
+    long inicio, periodo;                       // VARIABLE PARA MEDIR QRS
+    int amplitud,max, contador, min;            // VARIABLE PARA MEDIR QRS
+    float FC;                                   // VARIABLE PARA MEDIR FRECUENCIA CARDIACA
+    int toggle = 0;                             // VARIABLE PARA DEMO DE ECG
+    int punto;                                  // VARIABLE PARA GRAFICAR ECG
+    int to, tf, vo, vf;                         // VARIABLE PARA GRAFICA DE ECG
+    int xo,x1,yo,y1;                            // VARIABLE PARA GRAFICA DE ECG
+    int paso, amplitudQRS;                      // VARIABLE GUARDADA PARA GRAFICA Y QRS
+    int alto, ancho, origeny,a, inversion;      // VARIABLE PARA GRAFICA DE ECG
+    int contadorAlarma;                         // VARIABLE PARA PARAR ALARMA AL SALIR
+    ///////////////////////////////////* VARIABLES  *//////////////////////////////////////////////
 
-    String nombrePaciente, edadPaciente;
-    String lectura;
-
-    MediaPlayer mp;
-    // //// MULTIMEDIA //////
-    SoundPool soundPool;
-    int bip, paro;
-    boolean sonando = false;
-    boolean cargado = true;
-    boolean picoP = false;
-    boolean picoN = false;
-    long inicio, periodo; // MEDIR TIEMPO ENTRE QRS
-    int amplitud;
-    float FC;
-
-    int error; // PARA DETERMINAR QRS
-    int max, contador, min;
-    int punto;
-    boolean usuario = true;
-    int toggle = 0;
-    int to, tf, vo, vf;
-    int xo,x1,yo,y1,paso;
-    int alto, ancho, origeny,a, inversion;
-    final int vectorECG[]={120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,
+    ///////////////////////////////////* CONSTANTE  *//////////////////////////////////////////////
+    static final int vectorECG[]={120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,
+            120,120,120,120,120,
             120,120,121,122,124,126,127,129,131,133,135,137,139,141,142,143,144,144,144,143,142,
             140,138,136,133,131,128,126,124,122,121,120,120,120,120,120,120,120,120,120,120,120,120,
             120,120,120,120,120,120,120,120,119,117,115,113,110,108,106,104,102,102,103,108,116,127,
@@ -113,6 +111,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
             120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,
             120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120,
             120,120,120,120,120,120,120,120,120,120};
+    ///////////////////////////////////* CONSTANTE  *//////////////////////////////////////////////
 
     /* METODOS SECUENCIADOS */
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,42 +119,40 @@ public class Interfaz extends Activity implements View.OnClickListener{
         Log.d(TAG, " onCreate ");
         setContentView(R.layout.activity_interfaz);
 
-        soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC , 0);
-
-        soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
-            public void onLoadComplete(SoundPool sp, int sid, int status) {
-                Log.d(getClass().getSimpleName(), "Sound is now loaded");
-                cargado = true;
-            }});
-
-
-        bip = soundPool.load(this, R.raw.bip, 0);
-        paro = soundPool.load(this, R.raw.paro, 0);
-
-
-        set = new AnimatorSet();
-        set1 = new AnimatorSet();
-        set2 = new AnimatorSet();
-        set3 = new AnimatorSet();
-
-        mp = MediaPlayer.create(this, R.raw.paro);
-        mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        mp.setLooping(true);
-
-        error  = 0;
-        max = 0;
-        min = 240;
-        inicio = 0;
-        contador = 0;
-
+        ///////////// ASIGNACIONES DE OBJETOS A VARIABLES /////////////////
         estado = (TextView) findViewById(R.id.estado);
         paciente = (TextView) findViewById(R.id.IDpaciente);
         corazon = (ImageView) findViewById(R.id.corazon);
         boton = (Button) findViewById(R.id.refresh);
         espacio = (ImageView) findViewById(R.id.Grafica);
         salud = (TextView) findViewById(R.id.saludPaciente);
+        ///////////// ASIGNACIONES DE OBJETOS A VARIABLES /////////////////
 
-        // Acondicionamiento del canvas para empezar a graficar
+        ///////////// ASIGNACIONES PARA SONIDO /////////////////
+        soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC , 0);
+        soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+            public void onLoadComplete(SoundPool sp, int sid, int status) {
+                Log.d(getClass().getSimpleName(), "Sound is now loaded");
+                cargado = true;
+            }});
+        bip = soundPool.load(this, R.raw.bip, 0);
+        paro = soundPool.load(this, R.raw.paro, 0);
+        mp = MediaPlayer.create(this, R.raw.paro);
+        mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        mp.setLooping(true);
+        sonando = false;
+        cargado = false;
+        contadorAlarma = 0;
+        ///////////// ASIGNACIONES PARA SONIDO /////////////////
+
+        ///////////// ASIGNACIONES PARA QRS /////////////////
+        max = 0;
+        min = 240;
+        inicio = 0;
+        contador = 0;
+        ///////////// ASIGNACIONES PARA QRS /////////////////
+
+        ///////////// ASIGNACIONES PARA GRAFICAR /////////////////
         alto = 240;
         ancho = 700;
         xo = 0;
@@ -164,23 +161,32 @@ public class Interfaz extends Activity implements View.OnClickListener{
         y1=alto;
         a = 0;
         to = 0;
-
-
         origeny = alto/2;
-        boton.setOnClickListener(this);
+        ///////////// ASIGNACIONES PARA GRAFICAR /////////////////
 
-        // Elegir el ImageView como un canvas
+        ///////////// ASIGNACIONES PARA ANIMACION /////////////////
+        set = new AnimatorSet();
+        set1 = new AnimatorSet();
+        set2 = new AnimatorSet();
+        set3 = new AnimatorSet();
+        ///////////// ASIGNACIONES PARA ANIMACION /////////////////
+
+        ///////////// ASIGNACIONES PARA LISTENER /////////////////
+        boton.setOnClickListener(this);
+        ///////////// ASIGNACIONES PARA LISTENER /////////////////
+
+        ///////////// ASIGNACIONES PARA AGREGAR CANVAS /////////////////
         bitmap = Bitmap.createBitmap(ancho, alto, Bitmap.Config.ARGB_8888);
         espacio.setImageBitmap(bitmap);
         canvas = new Canvas(bitmap);
         paint = new Paint(Paint.FILTER_BITMAP_FLAG);
-
         empezarCanvas();
+        ///////////// ASIGNACIONES PARA AGREGAR CANVAS /////////////////
 
-        // carga datos y los despliega en el textview
+        ///////////// ASIGNACIONES PARA RECUPERAR DATOS /////////////////
         cargarDatos();
 
-        //animarCorazon
+        ///////////// ASIGNACIONES PARA ANIMAR CORAZON /////////////////
         animarCorazon();
 
         //////////////////*BLUETOOH ////////////////*/////////////////*/////////////////*/////////////////*/
@@ -220,6 +226,8 @@ public class Interfaz extends Activity implements View.OnClickListener{
     protected void onStop() {
         super.onStop();
         Log.d(TAG, "DETENIENDO");
+        contadorAlarma = 1;
+        muteAlarma();
         enviarMensaje("F");
         stoptimertask();
         if (BTservice != null)  //si ya se configuró el servicio de BT
@@ -234,7 +242,9 @@ public class Interfaz extends Activity implements View.OnClickListener{
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "Destruyendo");
+        contadorAlarma = 1;
         enviarMensaje("S0");
+        pararAlarma();
         if (BTadaptador.isEnabled())//habilitar si no lo esta
         {
             BTadaptador.disable();
@@ -247,7 +257,6 @@ public class Interfaz extends Activity implements View.OnClickListener{
                 Toast.makeText(this, "Apagando Bluetooth", Toast.LENGTH_SHORT).show();
             }
         }
-        muteAlarma();
     }
 
     @Override
@@ -304,7 +313,14 @@ public class Interfaz extends Activity implements View.OnClickListener{
         //inicializar el timer
         alarmaTimerTask();
         //esperar 0ms para empezar, repetir cada 100ms
-        timerAlarma.schedule(alarmaTask, 2000, 50000); //
+        if(contadorAlarma == 1)
+        {
+            timerAlarma.schedule(alarmaTask, 2000); //
+        }
+        else
+        {
+            timerAlarma.schedule(alarmaTask, 2000, 50000); //
+        }
     }
 
     public void pararAlarma() {
@@ -360,7 +376,14 @@ public class Interfaz extends Activity implements View.OnClickListener{
             mp.stop();
             mp.release();
             mp = MediaPlayer.create(this, R.raw.paro);
-            mp.setLooping(true);
+            if(contadorAlarma == 1)
+            {
+                mp.setLooping(false);
+            }
+            else
+            {
+                mp.setLooping(true);
+            }
             sonando = false;
         }
     }
@@ -382,7 +405,6 @@ public class Interfaz extends Activity implements View.OnClickListener{
         }
         if (to >= ancho)
         {
-            error  = 0;
             empezarCanvas();
             vo = vf;
         }
@@ -441,7 +463,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
         amplitud = max - min;
 
         // DETECCION DE QRS
-        if(inversion >= max-1 && amplitud > 60)
+        if(inversion >= max-1 && amplitud > amplitudQRS)
         {
             // DETECCION DE QRS, PARAR ALARMA DE ASISTOLIA
             pararAlarma();
@@ -550,17 +572,16 @@ public class Interfaz extends Activity implements View.OnClickListener{
 
     void cargarDatos()
     {
-        // Cargar datos guardados
-        final SharedPreferences respaldo = getSharedPreferences("MisDatos", Context.MODE_PRIVATE);
+        // RECUPERAR LOS DATOS GUARDADOS POR EL USUARIO PREVIAMENTE
+        respaldo = getSharedPreferences("MisDatos", Context.MODE_PRIVATE);
         // cargar el dato en la variable, o elegir por default la segunda opcion
         nombrePaciente = respaldo.getString("patientName","Paciente");
-        Log.d(TAG, "Nombre cargado: "+ nombrePaciente);
         edadPaciente = respaldo.getString("patientAge", "Edad");
-        Log.d(TAG, "Edad cargado: "+edadPaciente);
         paciente.setText(nombrePaciente +"\n"+edadPaciente+" años");
-        paso = Integer.parseInt(respaldo.getString("paso", "3"));
+        paso = Integer.parseInt(respaldo.getString("paso", "2"));
+        amplitudQRS = Integer.parseInt(respaldo.getString("amplitud","60"));
     }
-    //** METODOS PERSONALIZADOS
+    /////////////////////////////////** METODOS PERSONALIZADOS///////////////////////////////////////
 
 
        /* ///////////////////////////////MENU/////////////////////////////////////////////////////// */
@@ -586,6 +607,11 @@ public class Interfaz extends Activity implements View.OnClickListener{
             case R.id.datos: //Modificar Datos Paciente
                 startActivity(new Intent(this,DatosPaciente.class));
                 break;
+
+            case R.id.config: // Modificar parametros de monitor
+                startActivity(new Intent(this,DatosConfig.class));
+                break;
+
             case R.id.demo:
                 if(toggle == 0)
                 {

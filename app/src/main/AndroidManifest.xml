@@ -29,6 +29,10 @@
         <activity
             android:name=".DatosPaciente"
             android:theme="@android:style/Theme.Holo.Dialog" />
+
+        <activity
+            android:name=".DatosConfig"
+            android:theme="@android:style/Theme.Holo.Dialog" />
     </application>
 
 </manifest>

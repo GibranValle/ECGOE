@@ -6,15 +6,19 @@
     android:orderInCategory="1"
     android:title="@string/conectar"/>
 
-    <item android:id="@+id/visible"
+    <item android:id="@+id/config"
         android:orderInCategory="2"
-        android:title="@string/visible"/>
+        android:title="@string/config"/>
 
     <item android:id="@+id/datos"
         android:orderInCategory="3"
         android:title="@string/datos"/>
 
     <item android:id="@+id/demo"
-        android:orderInCategory="3"
+        android:orderInCategory="4"
         android:title="@string/demo"/>
+
+    <item android:id="@+id/visible"
+        android:orderInCategory="5"
+        android:title="@string/visible"/>
 </menu>

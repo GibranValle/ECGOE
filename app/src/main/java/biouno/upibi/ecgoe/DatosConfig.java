@@ -16,14 +16,13 @@ import android.widget.Toast;
  * SE ENLISTAN MAS DEVICES AL HACE UN DISCOVERY CUANDO SE ELIGE UN DEVICE
  * SE REGRESA LA DIRECCION MAC A LA PARENT ACTIVITY EN EL INTENT RESULT
  */
-public class DatosPaciente extends Activity {
+public class DatosConfig extends Activity {
     // Debugging
     private static final String TAG = "CONTROL";
-    private static final boolean D = true;
 
     Button actualizar, cancelar;
-    String nombrePaciente, edadPaciente;
-    TextView editPaciente, editEdad;
+    String paso, amplitudQRS;
+    TextView editPaso, editAmplitud;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,20 +30,21 @@ public class DatosPaciente extends Activity {
 
         // cargar la ventana
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.datos_paciente);
+        setContentView(R.layout.config);
 
-        editPaciente = (TextView) findViewById(R.id.paciente_nombre);
-        editEdad = (TextView) findViewById(R.id.paciente_edad);
+        editPaso = (TextView) findViewById(R.id.edit_paso);
+        editAmplitud = (TextView) findViewById(R.id.edit_amplitud);
         actualizar = (Button) findViewById(R.id.b_actualizar);
         cancelar = (Button) findViewById(R.id.b_cancelar);
 
+
         final SharedPreferences respaldo = getSharedPreferences("MisDatos", Context.MODE_PRIVATE);
         // cargar la clave en la variable clave, o 0000 por default (no encontrada, etc);
-        nombrePaciente = respaldo.getString("patientName","Paciente");
-        edadPaciente = respaldo.getString("patientAge","Edad");
+        paso = respaldo.getString("paso","2");
+        amplitudQRS = respaldo.getString("amplitud","60");
 
-        editPaciente.setText(nombrePaciente);
-        editEdad.setText(edadPaciente);
+        editPaso.setText(paso);
+        editAmplitud.setText(amplitudQRS);
 
         actualizar.setOnClickListener(new View.OnClickListener()
         {
@@ -53,18 +53,38 @@ public class DatosPaciente extends Activity {
                 Vibrator vibrador = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);        // Vibrate for 500 milliseconds
                 vibrador.vibrate(100);
 
-                nombrePaciente = editPaciente.getText().toString();
-                edadPaciente = editEdad.getText().toString();
+                paso = editPaso.getText().toString();
+                amplitudQRS = editAmplitud.getText().toString();
 
                 SharedPreferences.Editor editor = respaldo.edit();
-                editor.putString("patientName", nombrePaciente);
-                editor.putString("patientAge", edadPaciente);
+                editor.putString("paso", paso);
+                editor.putString("amplitud", amplitudQRS);
 
-                if(editor.commit())
+
+                if(Integer.parseInt(amplitudQRS) >= 40 &&Integer.parseInt(amplitudQRS)<=240)
                 {
-                    Toast.makeText(getBaseContext(),"Actualizado correctamente", Toast.LENGTH_SHORT).show();
-                    finish();
+                    if(Integer.parseInt(paso) >= 1 &&Integer.parseInt(paso)<=3)
+                    {
+                        if(editor.commit())
+                        {
+                            Toast.makeText(getBaseContext(),"Actualizado correctamente", Toast.LENGTH_SHORT).show();
+                            finish();
+                        }
+                    }
+                    else
+                    {
+                        Toast.makeText(getBaseContext(), "Error: Paso de grafica erronea", Toast.LENGTH_SHORT).show();
+                    }
                 }
+                else if(Integer.parseInt(amplitudQRS) < 40 &&Integer.parseInt(amplitudQRS)>240)
+                {
+                    Toast.makeText(getBaseContext(), "Error: Amplitud del QRS erronea", Toast.LENGTH_SHORT).show();
+                    if(Integer.parseInt(paso) < 1 &&Integer.parseInt(paso) > 3)
+                    {
+                        Toast.makeText(getBaseContext(), "Error: Paso de grafica erronea", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
             }
         });
 

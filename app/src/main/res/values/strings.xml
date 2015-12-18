@@ -9,7 +9,7 @@
     <string name="velocidad">Velocidad: 50%</string>
 
     <!-- textos textview -->
-    <string name="beats">BPM: 70 \nSaludable</string>
+    <string name="beats">BPM: - - \nConectar Electrodos</string>
     <string name="Paciente">Andrade Bacilio Orlando Alonzo\n25 años</string>
 
     <!-- textos BT -->
@@ -31,6 +31,20 @@
     <string name="visible">Hacer Visible</string>
     <string name="datos">Editar Datos Paciente</string>
     <string name="demo">Demo</string>
+    <string name="config">Configuracion de monitor</string>
+
+    <!-- textos PopUp -->
+    <string name="pop_ingresa">Ingresar datos paciente</string>
+    <string name="pop_nombre">Nombre:</string>
+    <string name="pop_hint_nombre">Paciente</string>
+    <string name="pop_edad">Edad:</string>
+    <string name="pop_hint_edad">Años</string>
+    <string name="pop_boton_actualizar">Actualizar</string>
+    <string name="pop_boton_cancelar">Cancelar</string>
+    <string name="pop_paso">Paso:</string>
+    <string name="pop_hint_paso">(1 a 3)</string>
+    <string name="pop_amplitud">Amplitud QRS:</string>
+    <string name="pop_hint_amplitud">(40 a 240)</string>
 
 
 </resources>

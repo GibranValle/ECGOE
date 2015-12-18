@@ -45,13 +45,13 @@
         <TextView
             android:layout_height="wrap_content"
             android:layout_width="0dp"
-            android:layout_weight="2"
+            android:layout_weight="5"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="@string/pop_nombre"
+            android:text="@string/pop_paso"
             style="@style/letramediana"
             android:layout_gravity="center"
             android:gravity="left"
-            android:id="@+id/tag_nombre"
+            android:id="@+id/tag_paso"
             />
         <EditText
             android:layout_height="wrap_content"
@@ -61,10 +61,10 @@
             android:inputType="textCapWords"
             android:ems="10"
             android:textColorHint="@color/GREEN3"
-            android:hint="@string/pop_hint_nombre"
+            android:hint="@string/pop_hint_paso"
             android:layout_gravity="center"
             android:gravity="center"
-            android:id="@+id/paciente_nombre" />
+            android:id="@+id/edit_paso" />
     </LinearLayout>
 
     <LinearLayout
@@ -76,13 +76,13 @@
         <TextView
             android:layout_height="wrap_content"
             android:layout_width="0dp"
-            android:layout_weight="2"
+            android:layout_weight="5"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="@string/pop_edad"
+            android:text="@string/pop_amplitud"
             style="@style/letramediana"
             android:layout_gravity="center"
             android:gravity="left"
-            android:id="@+id/tag_edad"
+            android:id="@+id/tag_amplitud"
             />
         <EditText
             android:layout_width="0dp"
@@ -91,10 +91,10 @@
             android:layout_weight="5"
             android:inputType="numberDecimal"
             android:ems="10"
-            android:hint="@string/pop_hint_edad"
+            android:hint="@string/pop_hint_amplitud"
             android:layout_gravity="center"
             android:gravity="center"
-            android:id="@+id/paciente_edad" />
+            android:id="@+id/edit_amplitud" />
     </LinearLayout>
 
 
