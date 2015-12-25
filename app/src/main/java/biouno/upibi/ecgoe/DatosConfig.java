@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -27,11 +28,12 @@ public class DatosConfig extends Activity {
     Button actualizar, cancelar;
     String paso, umbralQRS;
     SeekBar barra;
-    Switch switch_invertir;
+    Switch switch_invertir, switch_autoset;
     TextView editPaso, editAmplitud, tagAmplificacion;
+    LinearLayout umbral, gain;
     float amplificacion;
     int dato;
-    boolean invertir;
+    boolean invertir, autoset;
 
     //
     @Override
@@ -49,6 +51,26 @@ public class DatosConfig extends Activity {
         barra = (SeekBar) findViewById(R.id.barra);
         tagAmplificacion = (TextView) findViewById(R.id.tag_amplificacion);
         switch_invertir = (Switch) findViewById(R.id.invertir);
+        switch_autoset = (Switch) findViewById(R.id.autoset);
+        umbral = (LinearLayout) findViewById(R.id.umbral);
+        gain = (LinearLayout) findViewById(R.id.gain);
+
+        switch_autoset.setOnCheckedChangeListener(new Switch.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                autoset = isChecked;
+                if (autoset)
+                {
+                    umbral.setVisibility(View.GONE);
+                    gain.setVisibility(View.GONE);
+                }
+                else
+                {
+                    umbral.setVisibility(View.VISIBLE);
+                    gain.setVisibility(View.VISIBLE);
+                }
+            }
+        });
 
         switch_invertir.setOnCheckedChangeListener(new Switch.OnCheckedChangeListener() {
             @Override
@@ -81,6 +103,7 @@ public class DatosConfig extends Activity {
         umbralQRS = respaldo.getString("amplitud", "60");
         dato = Integer.parseInt(respaldo.getString("amplificacion", "2"));
         invertir = respaldo.getBoolean("invertir", false);
+        autoset = respaldo.getBoolean("autoset", false);
 
         editPaso.setText(paso);
         editAmplitud.setText(umbralQRS);
@@ -88,6 +111,7 @@ public class DatosConfig extends Activity {
         amplificacion = Math.round(100 * ((dato * dato * dato * dato * 0.010417f) - (dato * dato * dato * 0.020833f) + (dato * dato * 0.114583f) + (dato * 0.145833f) + (0.25f)));
         tagAmplificacion.setText("Gain x " + amplificacion / 100);
         switch_invertir.setChecked(invertir);
+        switch_autoset.setChecked(autoset);
 
         actualizar.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -102,6 +126,7 @@ public class DatosConfig extends Activity {
                 editor.putString("amplitud", umbralQRS);
                 editor.putString("amplificacion", String.valueOf(dato));
                 editor.putBoolean("invertir", invertir);
+                editor.putBoolean("autoset", autoset);
 
 
                 if (Integer.parseInt(umbralQRS) >= 40 && Integer.parseInt(umbralQRS) <= 240) {

@@ -47,6 +47,7 @@
     <string name="pop_hint_amplitud">(40 a 240)</string>
     <string name="pop_amplificacion">Gain x 1</string>
     <string name="pop_invertir">Invertir: </string>
+    <string name="pop_autoset">Autoset: </string>
 
 
 </resources>

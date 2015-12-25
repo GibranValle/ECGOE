@@ -100,100 +100,23 @@ public class Interfaz extends Activity implements View.OnClickListener{
     ///////////////////////////////////* VARIABLES  *//////////////////////////////////////////////
     int bip, paro;                              // VARIABLE PARA SONIDO
     boolean sonando,cargado;                    // VARIABLE PARA SONIDO
-    boolean invertir;
+    boolean invertir, autoset, calcular;        // VARIABLES PARA AJUSTE DE GRAFICA
+    boolean ultimoajuste;
     long inicio, periodo;                       // VARIABLE PARA MEDIR QRS
     int amplitud, max, contador, min, mid;           // VARIABLE PARA MEDIR QRS
+    int amplitud2;
     float FC;                                   // VARIABLE PARA MEDIR FRECUENCIA CARDIACA
     float amplificacion;                        // VARIABLE PARA MODIFICAR GANANCIA DIGITAL
     int valor;                                   // VARIABLE PARA MODIFICAR GANANCIA DIGITAL
     int toggle = 0;                             // VARIABLE PARA DEMO DE ECG
     int punto;                                  // VARIABLE PARA GRAFICAR ECG
-    int to, tf, vo, vf, VF, VO, offset;         // VARIABLE PARA GRAFICA DE ECG
-    int xo,x1,yo,y1;                            // VARIABLE PARA GRAFICA DE ECG
-    int contadorMin, contadorMax;               // VARIABLES PARA AJUSTE OFFSET
-    int paso, amplitudQRS;                      // VARIABLE GUARDADA PARA GRAFICA Y QRS
+    int to, tf, vo, vf, VF, VO, offset, amplitudPrevia;    // VARIABLE PARA GRAFICA DE ECG
+    int xo,x1,yo,y1,min2,max2;                  // VARIABLE PARA GRAFICA DE ECG
+    int paso, umbralQRS;                        // VARIABLE GUARDADA PARA GRAFICA Y QRS
     int alto, ancho, origeny,a, inversion;      // VARIABLE PARA GRAFICA DE ECG
     int contadorAlarma;                         // VARIABLE PARA PARAR ALARMA AL SALIR
     // Name of the connected device
     private String connectedDeviceName = null;
-    // The Handler that gets information back from the BluetoothChatService
-    private final Handler mHandler = new Handler() {
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                // APLICAR LOS CAMBIOS DE COLOR EN LA INTERFAZ CUANDO DETECTA UN CAMBIO EN ESTADO
-                case MESSAGE_STATE_CHANGE:
-                    if (D) Log.i(TAG, "MESSAGE_STATE_CHANGE: " + msg.arg1);
-                    switch (msg.arg1) {
-                        case BluetoothManager.STATE_CONNECTED:
-                            estado.setText(R.string.bt_CT);
-                            estado.setBackgroundColor(0x4300ff00);
-                            Log.d(TAG, " BT CONECTADO");
-                            enviarMensaje("O");
-                            // INICIA EL TIMER PARA DETECCION DE ASISTOLIA, DEBE DETENERSE CADA QUE ENCUENTRA QRS
-                            empezarAlarma();
-                            Log.i(TAG, "RECIBIENDO DATOS, ESPERANDO ASISTOLIA");
-                            break;
-                        case BluetoothManager.STATE_CONNECTING:
-                            stoptimertask();
-                            estado.setText(R.string.bt_CTING);
-                            estado.setBackgroundColor(0x430000ff);
-                            Log.d(TAG, " BT CONECTANDO");
-                            break;
-                        case BluetoothManager.STATE_LISTEN:
-                            estado.setText(R.string.bt_DC);
-                            estado.setBackgroundColor(0x43ff0000);
-                            Log.d(TAG, " BT DESCONECTADO");
-                            break;
-                        case BluetoothManager.STATE_NONE:
-                            estado.setText(R.string.bt_DC);
-                            estado.setBackgroundColor(0x43ff0000);
-                            Log.d(TAG, " BT DESCONECTADO");
-                            enviarMensaje("F");
-                            break;
-                    }
-                    break;
-                case MESSAGE_WRITE:
-                    byte[] writeBuf = (byte[]) msg.obj;
-                    String writeMessage = new String(writeBuf);
-                    break;
-                case MESSAGE_READ:
-                    String readMessage = (String) msg.obj;
-                    //Log.e(TAG, "mensaje llegando: " + readMessage);
-                    int largo = readMessage.length();
-                    int inicio = readMessage.indexOf("V");
-                    int fin = inicio + 4;
-                    int palabrasEnteras = largo / 4;
-
-                    //Log.e(TAG, "largo : " + largo +" inicio: "+inicio +" fin: "+fin);
-                    if (largo >= 4 && largo <= 1000 && inicio >= 0) {
-                        if (!readMessage.endsWith("\r") || !readMessage.endsWith("\n")) {
-                            palabrasEnteras = palabrasEnteras - 1;
-                        }
-                        //Log.e(TAG, "palabras enteras : " + palabrasEnteras);
-                        for (int j = 1; j <= palabrasEnteras; j++) {
-
-                            lectura = readMessage.substring(inicio + 1, fin);
-                            //Log.e(TAG, "palabraSeparada : " + lectura+" punto: "+punto);
-                            readMessage = readMessage.replaceFirst(readMessage, readMessage);
-                            inicio = inicio + 4;
-                            fin = fin + 4;
-                            punto = Integer.parseInt(lectura);
-                            graficarPunto(punto);
-                        }
-                    }
-                    break;
-                case MESSAGE_DEVICE_NAME:
-                    // save the connected device's name
-                    connectedDeviceName = msg.getData().getString(DEVICE_NAME);
-                    Toast.makeText(getApplicationContext(), "Conectado a " + connectedDeviceName, Toast.LENGTH_SHORT).show();
-                    break;
-                case MESSAGE_TOAST:
-                    Toast.makeText(getApplicationContext(), msg.getData().getString(TOAST),
-                            Toast.LENGTH_SHORT).show();
-                    break;
-            }
-        }
-    };
     // String buffer for outgoing messages
     private StringBuffer outStringBuffer;
     ///////////////////////////////////* VARIABLES  *//////////////////////////////////////////////
@@ -233,14 +156,21 @@ public class Interfaz extends Activity implements View.OnClickListener{
         mp.setLooping(true);
         sonando = false;
         cargado = false;
+        calcular = true;
+        ultimoajuste = true;
         contadorAlarma = 0;
         ///////////// ASIGNACIONES PARA SONIDO /////////////////
 
         ///////////// ASIGNACIONES PARA QRS /////////////////
         max = 0;
+        max2 = 0;
         min = 240;
+        min2 = 240;
         inicio = 0;
         contador = 0;
+        offset = 0;
+        amplitud = 240;
+        amplitudPrevia = 999;
         ///////////// ASIGNACIONES PARA QRS /////////////////
 
         ///////////// ASIGNACIONES PARA GRAFICAR /////////////////
@@ -312,6 +242,8 @@ public class Interfaz extends Activity implements View.OnClickListener{
         // configurar el servicio de BT
         if (BTservice == null) configurar();
         empezarCanvas();
+        max = 0;
+        min = 240;
         //////////////////*BLUETOOH ////////////////*/////////////////*/////////////////*/////////////////*/
     }
 
@@ -358,6 +290,8 @@ public class Interfaz extends Activity implements View.OnClickListener{
         if (v.getId() == R.id.refresh) // FRECUENCIA PORTADORA
         {
             empezarCanvas();
+            max = 0;
+            min = 240;
         }
         max = 0;
         min = 240;
@@ -399,7 +333,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
 
     public void empezarAlarma() {
         sonando = true;
-        Log.e(TAG, "empezando alarma: ");
+        //Log.v(TAG, "empezando alarma: ");
         //instanciar nuevo timer
         timerAlarma = new Timer();
         //inicializar el timer
@@ -416,7 +350,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
 
     public void pararAlarma() {
         //parar el timer, si no esta vacio
-        Log.e(TAG, "parando alarma: ");
+        //Log.v(TAG, "parando alarma: ");
         if (timerAlarma != null) {
             timerAlarma.cancel();
             timerAlarma = null;
@@ -437,8 +371,10 @@ public class Interfaz extends Activity implements View.OnClickListener{
                         //aquí va la acción a realizar
                         salud.setText("BPM: - -" + "\n" + "Asistolia");
                         sonidoAlarma();
+                        // recalcular max por asistolia
                         max = 0;
                         min = 240;
+                        calcular = true;
                         corazon.setVisibility(View.INVISIBLE);
                     }
                 });
@@ -487,74 +423,117 @@ public class Interfaz extends Activity implements View.OnClickListener{
         }
         // PRIMER PUNTO A GRAFICAR
         tf = to + paso;
+        if(!invertir)
+        {
+            vf = punto;
+        }
+        else
+        {
+            vf = alto -punto;
+        }
         vf = punto;
         calcularQRS();
-        vf = alto - punto;
-        canvas.drawLine(to, vo, tf, vf, paint);
-        //Log.w(TAG, "graficando puntos: "+" to "+to + " vo: "+vo +" tf: "+tf + " vf: "+vf);
+        canvas.drawLine(to, vo+offset, tf, vf+offset, paint);
         to = to + paso;
         vo = vf;
     }
 
     void graficar() {
-        if (to == 0) {
-            corazon.setVisibility(View.VISIBLE);
-            empezarCanvas();
+        if (to == 0) // INICIO DE GRAFICA
+        {
+            corazon.setVisibility(View.VISIBLE);    // MOSTRAR EL CORAZON LATIENDO
+            empezarCanvas();        // BORRAR GRAFICAS PREVIAS
         }
-        if (to >= ancho) {
-            empezarCanvas();
+
+        if( to >= ancho) // Graficando fuera del limite X
+        {
+            empezarCanvas();    // BORRAR GRAFICAS PREVIAS
         }
-        if (a >= 250) {
+
+        if(a>=250)  // GRAFICANDO FUERA DEL LIMITE X
+        {
             a = 0;
         }
 
-        if (a < 20) {
-            ajustarOffSet();
-        }
-
+        // INCREMENTOS
         tf = to + paso;
-        vf = alto - vectorECG[a];
+        if(!invertir)
+        {
+            vf = alto - vectorECG[a];
+        }
+        else
+        {
+            vf = vectorECG[a];
+        }
         vf = (int) (vf * amplificacion / 100);
-        VF = vf + offset;
-        VO = VO + offset;
+        vf = vf - offset;
         calcularQRS();
-        canvas.drawLine(to, VO, tf, VF, paint);
+        canvas.drawLine(to, vo, tf, vf, paint);
         to = to + paso;
         vo = vf;
         a = a + 1;
     }
 
     public void calcularQRS() {
-        inversion = alto - vf;
-        //Log.w(TAG, "max; "+max +" min: "+min+" amplitud: "+amplitud+ " contador: "+contador + " punto: "+inversion);
+        if(!invertir)
+        {
+            inversion = alto - vf;
+        }
+        else
+        {
+            inversion = vf;
+        }
 
-        if (inversion <= min) {
+        if(inversion < min && inversion >= 1)
+        {
             min = inversion;
+            amplitud = Math.abs(max - min);
+            Log.v(TAG,"min: "+min+ " max: "+max+" amplitud: " + amplitud);
         }
 
-        if (inversion >= max) {
+        if(inversion > max && inversion <=240)
+        {
             max = inversion;
+            amplitud = Math.abs(max - min);
+            Log.v(TAG,"min: "+min+ " max: "+max+" amplitud: " + amplitud);
         }
 
-        amplitud = max - min;
 
+        // VALIDAR AMPLITUD
+        if((amplitud >=1 && amplitud <= 240) && autoset)
+        {
+            if(amplitud == amplitudPrevia && calcular)
+            {
+                contador = contador + 1;
+                if(contador>200)
+                {
+                    amplificacion = 240*20/(float)amplitud;
+                    Log.e(TAG,"amplificacion: "+amplificacion + " contador: "+contador);
+                    calcular = false;
+                    mid = (max+min)/2;
+                    offset = (mid-240);
+                }
+            }
+        }
+        amplitudPrevia = amplitud;
+
+        //Log.d(TAG,"vf: "+vf);
         // DETECCION DE QRS
-        if (inversion >= max - 1 && amplitud > amplitudQRS) {
+        if ((inversion >= max - 1 && amplitud > umbralQRS) || (autoset && inversion<= min))
+        {
             // DETECCION DE QRS, PARAR ALARMA DE ASISTOLIA
             pararAlarma();
-            Log.i(TAG, "QRS detectado, parando alarma " + " SONANDO: " + sonando);
+            //Log.i(TAG, "QRS detectado, parando alarma " + " SONANDO: " + sonando);
 
-            // INICIA EL TIMER PARA DETECCION DE ASISTOLIA, DEBE DETENERSE CADA QUE ENCUENTRA QRS
+            // REINICIA EL TIMER PARA DETECCION DE ASISTOLIA, DEBE DETENERSE CADA QUE ENCUENTRA QRS
             empezarAlarma();
-            Log.i(TAG, "RECIBIENDO DATOS, ESPERANDO ASISTOLIA");
+            //Log.v(TAG, "RECIBIENDO DATOS, ESPERANDO ASISTOLIA");
             periodo = System.currentTimeMillis() - inicio;
             inicio = System.currentTimeMillis();
             if (periodo > 200 && periodo < 2000) {
                 sonidoBip();
-                max = 0;
-                min = 240;
                 FC = Math.round(1000 * 60 / periodo);
-                //Log.e(TAG,"QRS encontrado periodo: "+periodo +" amplitud: "+amplitud+" FC: "+FC);
+                Log.v(TAG,"QRS encontrado periodo: "+periodo +" amplitud: "+amplitud+" FC: "+FC);
                 if (FC < 50) {
                     salud.setText("BPM: " + (int) FC + "\n" + "Bradicardia");
 
@@ -567,7 +546,6 @@ public class Interfaz extends Activity implements View.OnClickListener{
                 }
             }
         }
-
     }
 
     public void ajustarOffSet() {
@@ -596,7 +574,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
         paint.setStrokeWidth(3);
 
         to = 0;
-        vo = origeny;
+        vo = vf;
         tf = to + paso;
     }
     /////////////////////////////////** METODOS PERSONALIZADOS///////////////////////////////////////
@@ -652,9 +630,10 @@ public class Interfaz extends Activity implements View.OnClickListener{
         edadPaciente = respaldo.getString("patientAge", "Edad");
         paciente.setText(nombrePaciente + "\n" + edadPaciente + " años");
         paso = Integer.parseInt(respaldo.getString("paso", "2"));
-        amplitudQRS = Integer.parseInt(respaldo.getString("amplitud", "60"));
+        umbralQRS = Integer.parseInt(respaldo.getString("amplitud", "60"));
         valor = Integer.parseInt(respaldo.getString("amplificacion", "2"));
         invertir = respaldo.getBoolean("invertir", false);
+        autoset = respaldo.getBoolean("autoset", false);
         amplificacion = Math.round(100 * ((valor * valor * valor * valor * 0.010417f) - (valor * valor * valor * 0.020833f) + (valor * valor * 0.114583f) + (valor * 0.145833f) + (0.25f)));
         Log.e(TAG, "Gain x " + amplificacion / 100);
     }
@@ -786,5 +765,83 @@ public class Interfaz extends Activity implements View.OnClickListener{
                 }
         }
     }
+    // The Handler that gets information back from the BluetoothChatService
+    private final Handler mHandler = new Handler() {
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                // APLICAR LOS CAMBIOS DE COLOR EN LA INTERFAZ CUANDO DETECTA UN CAMBIO EN ESTADO
+                case MESSAGE_STATE_CHANGE:
+                    if (D) Log.i(TAG, "MESSAGE_STATE_CHANGE: " + msg.arg1);
+                    switch (msg.arg1) {
+                        case BluetoothManager.STATE_CONNECTED:
+                            estado.setText(R.string.bt_CT);
+                            estado.setBackgroundColor(0x4300ff00);
+                            Log.d(TAG, " BT CONECTADO");
+                            enviarMensaje("O");
+                            // INICIA EL TIMER PARA DETECCION DE ASISTOLIA, DEBE DETENERSE CADA QUE ENCUENTRA QRS
+                            empezarAlarma();
+                            Log.i(TAG, "RECIBIENDO DATOS, ESPERANDO ASISTOLIA");
+                            break;
+                        case BluetoothManager.STATE_CONNECTING:
+                            stoptimertask();
+                            estado.setText(R.string.bt_CTING);
+                            estado.setBackgroundColor(0x430000ff);
+                            Log.d(TAG, " BT CONECTANDO");
+                            break;
+                        case BluetoothManager.STATE_LISTEN:
+                            estado.setText(R.string.bt_DC);
+                            estado.setBackgroundColor(0x43ff0000);
+                            Log.d(TAG, " BT DESCONECTADO");
+                            break;
+                        case BluetoothManager.STATE_NONE:
+                            estado.setText(R.string.bt_DC);
+                            estado.setBackgroundColor(0x43ff0000);
+                            Log.d(TAG, " BT DESCONECTADO");
+                            enviarMensaje("F");
+                            break;
+                    }
+                    break;
+                case MESSAGE_WRITE:
+                    byte[] writeBuf = (byte[]) msg.obj;
+                    String writeMessage = new String(writeBuf);
+                    break;
+                case MESSAGE_READ:
+                    String readMessage = (String) msg.obj;
+                    //Log.e(TAG, "mensaje llegando: " + readMessage);
+                    int largo = readMessage.length();
+                    int inicio = readMessage.indexOf("V");
+                    int fin = inicio + 4;
+                    int palabrasEnteras = largo / 4;
+
+                    //Log.e(TAG, "largo : " + largo +" inicio: "+inicio +" fin: "+fin);
+                    if (largo >= 4 && largo <= 1000 && inicio >= 0) {
+                        if (!readMessage.endsWith("\r") || !readMessage.endsWith("\n")) {
+                            palabrasEnteras = palabrasEnteras - 1;
+                        }
+                        //Log.e(TAG, "palabras enteras : " + palabrasEnteras);
+                        for (int j = 1; j <= palabrasEnteras; j++) {
+
+                            lectura = readMessage.substring(inicio + 1, fin);
+                            //Log.e(TAG, "palabraSeparada : " + lectura+" punto: "+punto);
+                            readMessage = readMessage.replaceFirst(readMessage, readMessage);
+                            inicio = inicio + 4;
+                            fin = fin + 4;
+                            punto = Integer.parseInt(lectura);
+                            graficarPunto(punto);
+                        }
+                    }
+                    break;
+                case MESSAGE_DEVICE_NAME:
+                    // save the connected device's name
+                    connectedDeviceName = msg.getData().getString(DEVICE_NAME);
+                    Toast.makeText(getApplicationContext(), "Conectado a " + connectedDeviceName, Toast.LENGTH_SHORT).show();
+                    break;
+                case MESSAGE_TOAST:
+                    Toast.makeText(getApplicationContext(), msg.getData().getString(TOAST),
+                            Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+    };
 }
     /* ///////////////////////////////METODOS BLUETOOTH/////////////////////////////////////////////// */
