@@ -11,7 +11,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-/** ESTA ACTIVITY TIENE APARIENCIA DE DIALOGO (CONFIGURADA EN EL MANIFEST)
+/**
+ * ESTA ACTIVITY TIENE APARIENCIA DE DIALOGO (CONFIGURADA EN EL MANIFEST)
  * SI EXISTEN DISPOSITIVOS VINCULADOS, LOS ARREGLA AL PRIMER ARREGO
  * SE ENLISTAN MAS DEVICES AL HACE UN DISCOVERY CUANDO SE ELIGE UN DEVICE
  * SE REGRESA LA DIRECCION MAC A LA PARENT ACTIVITY EN EL INTENT RESULT
@@ -40,16 +41,14 @@ public class DatosPaciente extends Activity {
 
         final SharedPreferences respaldo = getSharedPreferences("MisDatos", Context.MODE_PRIVATE);
         // cargar la clave en la variable clave, o 0000 por default (no encontrada, etc);
-        nombrePaciente = respaldo.getString("patientName","Paciente");
-        edadPaciente = respaldo.getString("patientAge","Edad");
+        nombrePaciente = respaldo.getString("patientName", "Paciente");
+        edadPaciente = respaldo.getString("patientAge", "18");
 
         editPaciente.setText(nombrePaciente);
         editEdad.setText(edadPaciente);
 
-        actualizar.setOnClickListener(new View.OnClickListener()
-        {
-            public void onClick(View v)
-            {
+        actualizar.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
                 Vibrator vibrador = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);        // Vibrate for 500 milliseconds
                 vibrador.vibrate(100);
 
@@ -60,18 +59,15 @@ public class DatosPaciente extends Activity {
                 editor.putString("patientName", nombrePaciente);
                 editor.putString("patientAge", edadPaciente);
 
-                if(editor.commit())
-                {
-                    Toast.makeText(getBaseContext(),"Actualizado correctamente", Toast.LENGTH_SHORT).show();
+                if (editor.commit()) {
+                    Toast.makeText(getBaseContext(), "Actualizado correctamente", Toast.LENGTH_SHORT).show();
                     finish();
                 }
             }
         });
 
-        cancelar.setOnClickListener(new View.OnClickListener()
-                                    {
-                                        public void onClick(View v)
-                                        {
+        cancelar.setOnClickListener(new View.OnClickListener() {
+                                        public void onClick(View v) {
                                             Vibrator vibrador = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);        // Vibrate for 500 milliseconds
                                             vibrador.vibrate(100);
                                             finish();

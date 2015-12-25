@@ -43,8 +43,10 @@
     <string name="pop_boton_cancelar">Cancelar</string>
     <string name="pop_paso">Paso:</string>
     <string name="pop_hint_paso">(1 a 3)</string>
-    <string name="pop_amplitud">Amplitud QRS:</string>
+    <string name="pop_amplitud">Umbral QRS:</string>
     <string name="pop_hint_amplitud">(40 a 240)</string>
+    <string name="pop_amplificacion">Gain x 1</string>
+    <string name="pop_invertir">Invertir: </string>
 
 
 </resources>
