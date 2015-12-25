@@ -466,9 +466,8 @@ public class Interfaz extends Activity implements View.OnClickListener{
             vf = vectorECG[a];
         }
         vf = (int) (vf * amplificacion / 100);
-        vf = vf - offset;
         calcularQRS();
-        canvas.drawLine(to, vo, tf, vf, paint);
+        canvas.drawLine(to, vo-offset, tf, vf-offset, paint);
         to = to + paso;
         vo = vf;
         a = a + 1;
@@ -502,20 +501,23 @@ public class Interfaz extends Activity implements View.OnClickListener{
         // VALIDAR AMPLITUD
         if((amplitud >=1 && amplitud <= 240) && autoset)
         {
-            if(amplitud == amplitudPrevia && calcular)
+            if(calcular)
             {
                 contador = contador + 1;
-                if(contador>200)
+                if(contador>500)
                 {
                     amplificacion = 240*20/(float)amplitud;
-                    Log.e(TAG,"amplificacion: "+amplificacion + " contador: "+contador);
-                    calcular = false;
-                    mid = (max+min)/2;
-                    offset = (mid-240);
+                    if(amplificacion <160)
+                    {
+                        Log.e(TAG,"amplificacion: "+amplificacion + " contador: "+contador);
+                        calcular = false;
+                        contador = 0;
+                        mid = (max+min)/2;
+                        offset = (mid-240);
+                    }
                 }
             }
         }
-        amplitudPrevia = amplitud;
 
         //Log.d(TAG,"vf: "+vf);
         // DETECCION DE QRS
