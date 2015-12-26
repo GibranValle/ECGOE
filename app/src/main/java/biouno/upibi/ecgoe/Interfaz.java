@@ -1,5 +1,6 @@
 package biouno.upibi.ecgoe;
 
+import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
@@ -24,7 +25,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.LinearInterpolator;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -78,16 +79,15 @@ public class Interfaz extends Activity implements View.OnClickListener{
     final Handler handler = new Handler();      // VARIABLE PARA TIMER
     final Handler handler2 = new Handler();     // VARIABLE PARA TIMER
     ///////////////////////////////* VARIABLES DE OBJETOS */////////////////////////////////////////
-    AnimatorSet set, set1, set2, set3;             // VARIABLE PARA ANIMACION DE CORAZON
+
     /*//////////////////////// CONSTANTES PARA BLUETOOTH//////////////////////////////////////////*/
     Bitmap bitmap;                              // VARIABLE PARA CANVAS
     Button boton;                               // VARIABLE PARA BOTON
     Canvas canvas;                              // VARIABLE PARA CANVAS
     ImageView espacio, corazon;                 // VARIABLES PARA ANIMACION DE CORAZON
     Intent i;                                   // VARIABLE PARA CAMBIO DE ACTIVITY
-    LinearInterpolator lineal;                  // VARIABLE PARA ANIMACION DE CORAZON
+    DecelerateInterpolator desacelerado;
     MediaPlayer mp;                             // VARIABLES PARA SONIDO
-    ObjectAnimator animador;                    // VARIABLE PARA ANIMACION DE CORAZON
     Paint paint;                                // VARIABLE PARA CANVAS
     TextView estado, paciente, salud;           // VARIABLE PARA TEXTOS CAMBIANTES
     SharedPreferences respaldo;                 // VARIABLE PARA RECUPERAR DATOS
@@ -101,20 +101,20 @@ public class Interfaz extends Activity implements View.OnClickListener{
     int bip, paro;                              // VARIABLE PARA SONIDO
     boolean sonando,cargado;                    // VARIABLE PARA SONIDO
     boolean invertir, autoset, calcular;        // VARIABLES PARA AJUSTE DE GRAFICA
-    boolean ultimoajuste;
     long inicio, periodo;                       // VARIABLE PARA MEDIR QRS
-    int amplitud, max, contador, min, mid;           // VARIABLE PARA MEDIR QRS
+    int amplitud, max, contador, min;           // VARIABLE PARA MEDIR QRS
     int amplitud2;
     float FC;                                   // VARIABLE PARA MEDIR FRECUENCIA CARDIACA
     float amplificacion;                        // VARIABLE PARA MODIFICAR GANANCIA DIGITAL
     int valor;                                   // VARIABLE PARA MODIFICAR GANANCIA DIGITAL
     int toggle = 0;                             // VARIABLE PARA DEMO DE ECG
     int punto;                                  // VARIABLE PARA GRAFICAR ECG
-    int to, tf, vo, vf, VF, VO, offset, amplitudPrevia;    // VARIABLE PARA GRAFICA DE ECG
+    int to, tf, vo, vf, offset, amplitudPrevia;    // VARIABLE PARA GRAFICA DE ECG
     int xo,x1,yo,y1,min2,max2;                  // VARIABLE PARA GRAFICA DE ECG
     int paso, umbralQRS;                        // VARIABLE GUARDADA PARA GRAFICA Y QRS
-    int alto, ancho, origeny,a, inversion;      // VARIABLE PARA GRAFICA DE ECG
+    int alto, ancho, origeny,a;      // VARIABLE PARA GRAFICA DE ECG
     int contadorAlarma;                         // VARIABLE PARA PARAR ALARMA AL SALIR
+    int error =0;
     // Name of the connected device
     private String connectedDeviceName = null;
     // String buffer for outgoing messages
@@ -157,7 +157,6 @@ public class Interfaz extends Activity implements View.OnClickListener{
         sonando = false;
         cargado = false;
         calcular = true;
-        ultimoajuste = true;
         contadorAlarma = 0;
         ///////////// ASIGNACIONES PARA SONIDO /////////////////
 
@@ -170,7 +169,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
         contador = 0;
         offset = 0;
         amplitud = 240;
-        amplitudPrevia = 999;
+        amplitudPrevia = 0;
         ///////////// ASIGNACIONES PARA QRS /////////////////
 
         ///////////// ASIGNACIONES PARA GRAFICAR /////////////////
@@ -184,13 +183,6 @@ public class Interfaz extends Activity implements View.OnClickListener{
         to = 0;
         origeny = alto / 2;
         ///////////// ASIGNACIONES PARA GRAFICAR /////////////////
-
-        ///////////// ASIGNACIONES PARA ANIMACION /////////////////
-        set = new AnimatorSet();
-        set1 = new AnimatorSet();
-        set2 = new AnimatorSet();
-        set3 = new AnimatorSet();
-        ///////////// ASIGNACIONES PARA ANIMACION /////////////////
 
         ///////////// ASIGNACIONES PARA LISTENER /////////////////
         boton.setOnClickListener(this);
@@ -208,7 +200,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
         cargarDatos();
 
         ///////////// ASIGNACIONES PARA ANIMAR CORAZON /////////////////
-        animarCorazon();
+        animarCorazon(1000);
 
         //////////////////*BLUETOOH ////////////////*/////////////////*/////////////////*/////////////////*/
         // Obtener el adaptador y comprobar soporte de BT
@@ -244,6 +236,9 @@ public class Interfaz extends Activity implements View.OnClickListener{
         empezarCanvas();
         max = 0;
         min = 240;
+        max2 = 0;
+        min2 = 240;
+        contador = 0;
         //////////////////*BLUETOOH ////////////////*/////////////////*/////////////////*/////////////////*/
     }
 
@@ -291,11 +286,12 @@ public class Interfaz extends Activity implements View.OnClickListener{
         {
             empezarCanvas();
             max = 0;
+            max2 = 0;
             min = 240;
+            min2 = 240;
+            pararAlarma();
         }
-        max = 0;
-        min = 240;
-        pararAlarma();
+
     }
 
     //////////////////////////////////////* METODOS PARA TIMER *////////////////////////////////////
@@ -412,34 +408,24 @@ public class Interfaz extends Activity implements View.OnClickListener{
 
     //////////////////////////////////* METODOS PERSONALIZADOS /////////////////////////////////////
     void graficarPunto(int punto) {
-        punto = (int) amplificacion * punto / 100;
-        if (to == 0) {
-            corazon.setVisibility(View.VISIBLE);
-            empezarCanvas();
-        }
-        if (to >= ancho) {
-            empezarCanvas();
-            vo = vf;
-        }
-        // PRIMER PUNTO A GRAFICAR
-        tf = to + paso;
-        if(!invertir)
+        // INICIO DE GRAFICA
+        if(to == 0)
         {
-            vf = punto;
+            corazon.setVisibility(View.VISIBLE);    // MOSTRAR EL CORAZON LATIENDO
+            empezarCanvas();        // BORRAR GRAFICAS PREVIAS
         }
-        else
+
+        if( to >= ancho) // Graficando fuera del limite X
         {
-            vf = alto -punto;
+            empezarCanvas();    // BORRAR GRAFICAS PREVIAS
         }
-        vf = punto;
-        calcularQRS();
-        canvas.drawLine(to, vo+offset, tf, vf+offset, paint);
-        to = to + paso;
-        vo = vf;
+        dibujarSeñal(punto);
+        calcularQRS(punto);
     }
 
     void graficar() {
-        if (to == 0) // INICIO DE GRAFICA
+        // INICIO DE GRAFICA
+        if(to == 0)
         {
             corazon.setVisibility(View.VISIBLE);    // MOSTRAR EL CORAZON LATIENDO
             empezarCanvas();        // BORRAR GRAFICAS PREVIAS
@@ -450,119 +436,140 @@ public class Interfaz extends Activity implements View.OnClickListener{
             empezarCanvas();    // BORRAR GRAFICAS PREVIAS
         }
 
-        if(a>=250)  // GRAFICANDO FUERA DEL LIMITE X
+        if(a>=250)  // SE TERMINA EL VERCTOR, REINICIARLO
         {
             a = 0;
         }
-
-        // INCREMENTOS
-        tf = to + paso;
-        if(!invertir)
-        {
-            vf = alto - vectorECG[a];
-        }
-        else
-        {
-            vf = vectorECG[a];
-        }
-        vf = (int) (vf * amplificacion / 100);
-        calcularQRS();
-        canvas.drawLine(to, vo-offset, tf, vf-offset, paint);
-        to = to + paso;
-        vo = vf;
+        // CICLO DE CADA PASO
+        dibujarSeñal(vectorECG[a]);
+        calcularQRS(vectorECG[a]);
         a = a + 1;
     }
 
-    public void calcularQRS() {
-        if(!invertir)
+    public void dibujarSeñal(int point)
+    {
+        // amplificar
+        vf = (int) (point * amplificacion / 100);
+        if(invertir)
         {
-            inversion = alto - vf;
+            canvas.drawLine(to, vo-offset, tf, vf-offset, paint);
         }
         else
         {
-            inversion = vf;
+            canvas.drawLine(to, 240-vo+offset, tf, 240-vf+offset, paint);
         }
 
-        if(inversion < min && inversion >= 1)
-        {
-            min = inversion;
-            amplitud = Math.abs(max - min);
-            Log.v(TAG,"min: "+min+ " max: "+max+" amplitud: " + amplitud);
-        }
+        // INCREMENTOS
+        to = to + paso;
+        tf = to + paso;
+        vo = vf;
+    }
 
-        if(inversion > max && inversion <=240)
+    public void calcularQRS(int point) {
+        if(autoset)
         {
-            max = inversion;
-            amplitud = Math.abs(max - min);
-            Log.v(TAG,"min: "+min+ " max: "+max+" amplitud: " + amplitud);
-        }
-
-
-        // VALIDAR AMPLITUD
-        if((amplitud >=1 && amplitud <= 240) && autoset)
-        {
-            if(calcular)
+            // AMPLITUD INICIAL
+            if(contador < 250 )
             {
-                contador = contador + 1;
-                if(contador>500)
+                if (point > max)
                 {
-                    amplificacion = 240*20/(float)amplitud;
-                    if(amplificacion <160)
-                    {
-                        Log.e(TAG,"amplificacion: "+amplificacion + " contador: "+contador);
-                        calcular = false;
-                        contador = 0;
-                        mid = (max+min)/2;
-                        offset = (mid-240);
+                    max = point;
+                    amplitud = max - min;
+                    Log.v(TAG,"amplitud: "+amplitud);
+                }
+                if (point < min)
+                {
+                    min = point;
+                    amplitud = max - min;
+                    Log.v(TAG,"amplitud: "+amplitud);
+                }
+            }
+
+            if(contador >= 250)
+            {
+                // MEDICION DE AMPLITUD INESTABLE
+                if (point > max2)
+                {
+                    max2 = point;
+                    amplitud2 = max2 - min2;
+                    Log.v(TAG,"amplitud2: "+amplitud2);
+                }
+                if (point < min2)
+                {
+                    min2 = point;
+                    amplitud2 = max2 - min2;
+                    Log.v(TAG,"amplitud2: "+amplitud2);
+                }
+            }
+
+            if(contador >=500)
+            {
+                error = Math.abs((amplitud-amplitud2));
+                {
+                    Log.e(TAG,"error: "+error);
+                }
+                if(error > 5)
+                {
+                    // recalcular amplitud estable
+                    contador = 0;
+                    max = 0;
+                    min = 240;
+                }
+                else
+                {
+                    // calcular amplificacion para llenar la pantalla;
+                    amplificacion = 230*100/(float) amplitud;
+                    offset = (max+min)/2-45;
+                    Log.e(TAG,"Amplificacion necesaria para corregir: "+amplificacion);
+                    contador = 250;
+                    max2 = 0;
+                    min2 = 240;
+                }
+            }
+            contador += 1;
+        }
+
+        // DETECCION DE QRS
+        {
+            if ((autoset && point>=max) || (!autoset && point > umbralQRS) )
+            {
+                // DETECCION DE QRS, PARAR ALARMA DE ASISTOLIA
+                pararAlarma();
+                //Log.i(TAG, "QRS detectado, parando alarma " + " SONANDO: " + sonando);
+
+                // REINICIA EL TIMER PARA DETECCION DE ASISTOLIA, DEBE DETENERSE CADA QUE ENCUENTRA QRS
+                empezarAlarma();
+                //Log.v(TAG, "RECIBIENDO DATOS, ESPERANDO ASISTOLIA");
+                periodo = System.currentTimeMillis() - inicio;
+                inicio = System.currentTimeMillis();
+                if (periodo > 200 && periodo < 2000) {
+                    sonidoBip();
+                    animarCorazon(periodo);
+                    FC = Math.round(1000 * 60 / periodo);
+                    Log.v(TAG,"QRS encontrado periodo: "+periodo +" amplitud: "+amplitud+" FC: "+FC);
+                    if (FC < 50) {
+                        salud.setText("BPM: " + (int) FC + "\n" + "Bradicardia");
+
+                    } else if (FC > 50 && FC < 100) {
+                        salud.setText("BPM: " + (int) FC + "\n" + "Normal");
+
+                    } else if (FC > 100) {
+                        salud.setText("BPM: " + (int) FC + "\n" + "Taquicardia");
+
                     }
                 }
             }
         }
-
-        //Log.d(TAG,"vf: "+vf);
-        // DETECCION DE QRS
-        if ((inversion >= max - 1 && amplitud > umbralQRS) || (autoset && inversion<= min))
-        {
-            // DETECCION DE QRS, PARAR ALARMA DE ASISTOLIA
-            pararAlarma();
-            //Log.i(TAG, "QRS detectado, parando alarma " + " SONANDO: " + sonando);
-
-            // REINICIA EL TIMER PARA DETECCION DE ASISTOLIA, DEBE DETENERSE CADA QUE ENCUENTRA QRS
-            empezarAlarma();
-            //Log.v(TAG, "RECIBIENDO DATOS, ESPERANDO ASISTOLIA");
-            periodo = System.currentTimeMillis() - inicio;
-            inicio = System.currentTimeMillis();
-            if (periodo > 200 && periodo < 2000) {
-                sonidoBip();
-                FC = Math.round(1000 * 60 / periodo);
-                Log.v(TAG,"QRS encontrado periodo: "+periodo +" amplitud: "+amplitud+" FC: "+FC);
-                if (FC < 50) {
-                    salud.setText("BPM: " + (int) FC + "\n" + "Bradicardia");
-
-                } else if (FC > 50 && FC < 100) {
-                    salud.setText("BPM: " + (int) FC + "\n" + "Normal");
-
-                } else if (FC > 100) {
-                    salud.setText("BPM: " + (int) FC + "\n" + "Taquicardia");
-
-                }
-            }
-        }
-    }
-
-    public void ajustarOffSet() {
-        mid = (max + min) / 2;
-        offset = mid - 120;
     }
 
     void empezarCanvas() {
+        // DIBUJAR RECTA DEL FONDO
         canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
         paint.setColor(0xff1d721d);
         paint.setStrokeWidth(1);
         canvas.drawLine(xo, origeny, x1, origeny, paint);
         canvas.drawLine(xo, alto / 4, x1, alto / 4, paint);
         canvas.drawLine(xo, 3 * alto / 4, x1, 3 * alto / 4, paint);
-
         canvas.drawLine(ancho / 10, 0, ancho / 10, alto, paint);
         canvas.drawLine(2 * ancho / 10, 0, 2 * ancho / 10, alto, paint);
         canvas.drawLine(3 * ancho / 10, 0, 3 * ancho / 10, alto, paint);
@@ -573,48 +580,69 @@ public class Interfaz extends Activity implements View.OnClickListener{
         canvas.drawLine(8 * ancho / 10, 0, 8 * ancho / 10, alto, paint);
         canvas.drawLine(9 * ancho / 10, 0, 9 * ancho / 10, alto, paint);
 
+        // CAMBIAR GRUESO DE LA LINEA PARA RESALTAR
         paint.setStrokeWidth(3);
-
+        // INICIALIZAR LOS PUNTOS
         to = 0;
         vo = vf;
         tf = to + paso;
     }
     /////////////////////////////////** METODOS PERSONALIZADOS///////////////////////////////////////
 
-    void animarCorazon()
+    void animarCorazon(long periodo)
     {
-        //animacion
-        if (animador != null) {
-            set.cancel();
-            set1.cancel();
-            set2.cancel();
-            set3.cancel();
-            animador.cancel();
-        }
-        animador = ObjectAnimator.ofFloat(corazon, "alpha", 1, 0.25f, 1);
+        ObjectAnimator animador;
+        AnimatorSet set = new AnimatorSet();
+        AnimatorSet set1 = new AnimatorSet();
+        AnimatorSet set2 = new AnimatorSet();
+        AnimatorSet set3 = new AnimatorSet();
+
+        animador = ObjectAnimator.ofFloat(corazon, "alpha", 1, 0.25f, 0.7f, 0.9f, 1);
         animador.setRepeatMode(ObjectAnimator.RESTART);
-        animador.setDuration(500);
+        animador.setDuration(periodo);
         animador.setRepeatCount(ObjectAnimator.INFINITE);
-        animador.setInterpolator(lineal);
+        animador.setInterpolator(desacelerado);
         set.play(animador);
 
-        animador = ObjectAnimator.ofFloat(corazon, "scaleX", 1, 0.8f, 1);
+        animador = ObjectAnimator.ofFloat(corazon, "scaleX", 1, 0.9f, 0.93f, 0.96f, 1);
         animador.setRepeatMode(ObjectAnimator.RESTART);
-        animador.setDuration(500);
+        animador.setDuration(periodo);
         animador.setRepeatCount(ObjectAnimator.INFINITE);
-        animador.setInterpolator(lineal);
+        animador.setInterpolator(desacelerado);
         set1.play(animador);
 
-        animador = ObjectAnimator.ofFloat(corazon, "scaleY", 1, 0.8f, 1);
+        animador = ObjectAnimator.ofFloat(corazon, "scaleY", 1, 0.9f, 0.93f, 0.96f, 1);
         animador.setRepeatMode(ObjectAnimator.RESTART);
-        animador.setDuration(500);
+        animador.setDuration(periodo);
         animador.setRepeatCount(ObjectAnimator.INFINITE);
-        animador.setInterpolator(lineal);
+        animador.setInterpolator(desacelerado);
         set2.play(animador);
 
         set3.playTogether(set, set1, set2);
         set3.start();
         Log.i(TAG, "Refresh");
+
+        set3.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                Log.e(TAG,"empezando animacion");
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
     }
 
     void vibrar(int ms)
@@ -637,7 +665,8 @@ public class Interfaz extends Activity implements View.OnClickListener{
         invertir = respaldo.getBoolean("invertir", false);
         autoset = respaldo.getBoolean("autoset", false);
         amplificacion = Math.round(100 * ((valor * valor * valor * valor * 0.010417f) - (valor * valor * valor * 0.020833f) + (valor * valor * 0.114583f) + (valor * 0.145833f) + (0.25f)));
-        Log.e(TAG, "Gain x " + amplificacion / 100);
+        offset = 0;
+        //Log.v(TAG, "Gain x " + amplificacion / 100);
     }
 
     /* ///////////////////////////////MENU/////////////////////////////////////////////////////// */
