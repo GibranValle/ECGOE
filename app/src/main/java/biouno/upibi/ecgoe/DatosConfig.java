@@ -59,13 +59,10 @@ public class DatosConfig extends Activity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 autoset = isChecked;
-                if (autoset)
-                {
+                if (autoset) {
                     umbral.setVisibility(View.GONE);
                     gain.setVisibility(View.GONE);
-                }
-                else
-                {
+                } else {
                     umbral.setVisibility(View.VISIBLE);
                     gain.setVisibility(View.VISIBLE);
                 }
@@ -100,10 +97,10 @@ public class DatosConfig extends Activity {
         final SharedPreferences respaldo = getSharedPreferences("MisDatos", Context.MODE_PRIVATE);
         // cargar la clave en la variable clave, o 0000 por default (no encontrada, etc);
         paso = respaldo.getString("paso", "2");
-        umbralQRS = respaldo.getString("amplitud", "60");
+        umbralQRS = respaldo.getString("amplitud", "20");
         dato = Integer.parseInt(respaldo.getString("amplificacion", "2"));
         invertir = respaldo.getBoolean("invertir", false);
-        autoset = respaldo.getBoolean("autoset", false);
+        autoset = respaldo.getBoolean("autoset", true);
 
         editPaso.setText(paso);
         editAmplitud.setText(umbralQRS);
@@ -129,7 +126,7 @@ public class DatosConfig extends Activity {
                 editor.putBoolean("autoset", autoset);
 
 
-                if (Integer.parseInt(umbralQRS) >= 40 && Integer.parseInt(umbralQRS) <= 240) {
+                if (Integer.parseInt(umbralQRS) >= 0 && Integer.parseInt(umbralQRS) <= 240) {
                     if (Integer.parseInt(paso) >= 1 && Integer.parseInt(paso) <= 3) {
                         if (editor.commit()) {
                             Toast.makeText(getBaseContext(), "Actualizado correctamente", Toast.LENGTH_SHORT).show();
@@ -138,7 +135,7 @@ public class DatosConfig extends Activity {
                     } else {
                         Toast.makeText(getBaseContext(), "Error: Paso de grafica erronea", Toast.LENGTH_SHORT).show();
                     }
-                } else if (Integer.parseInt(umbralQRS) < 40 && Integer.parseInt(umbralQRS) > 240) {
+                } else if (Integer.parseInt(umbralQRS) < 0 && Integer.parseInt(umbralQRS) > 240) {
                     Toast.makeText(getBaseContext(), "Error: Amplitud del QRS erronea", Toast.LENGTH_SHORT).show();
                     if (Integer.parseInt(paso) < 1 && Integer.parseInt(paso) > 3) {
                         Toast.makeText(getBaseContext(), "Error: Paso de grafica erronea", Toast.LENGTH_SHORT).show();

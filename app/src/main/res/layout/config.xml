@@ -11,7 +11,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_weight=".5"
         android:orientation="vertical"
         >
         <TextView
@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:text="@string/pop_ingresa"
+            android:text="@string/pop_config"
             android:textAppearance="?android:attr/textAppearanceLarge"
             />
 
@@ -30,7 +30,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight=".05"
-            android:background="@color/GREEN2"
+            android:background="@color/letra_pipboy"
             />
     </LinearLayout>
 
@@ -64,7 +64,7 @@
             android:hint="@string/pop_hint_paso"
             android:inputType="numberDecimal"
             android:maxLength="35"
-            android:textColorHint="@color/GREEN3" />
+            android:textColorHint="@color/GREEN_HINT" />
     </LinearLayout>
 
     <LinearLayout
@@ -94,7 +94,7 @@
             android:gravity="center"
             android:hint="@string/pop_hint_amplitud"
             android:inputType="numberDecimal"
-            android:textColorHint="@color/GREEN3" />
+            android:textColorHint="@color/GREEN_HINT" />
     </LinearLayout>
 
     <LinearLayout
@@ -147,10 +147,9 @@
             android:id="@+id/invertir"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_gravity="left"
-            android:layout_marginRight="40dp"
+            android:layout_gravity="center"
             android:layout_weight="5"
-            android:gravity="left"
+            android:gravity="center"
             android:textOff="No"
             android:textOn="Sí" />
     </LinearLayout>
@@ -176,10 +175,9 @@
             android:id="@+id/autoset"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_gravity="left"
-            android:layout_marginRight="40dp"
+            android:layout_gravity="center"
             android:layout_weight="5"
-            android:gravity="left"
+            android:gravity="center"
             android:textOff="No"
             android:textOn="Sí" />
     </LinearLayout>

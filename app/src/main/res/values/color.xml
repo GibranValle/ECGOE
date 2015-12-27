@@ -1,25 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="letra">#ff524a48</color>
-    <color name="hint">#3dbababb</color>
-    <color name="RED">#ff52150d</color>
-    <color name="GREEN">#8c00ff00</color>
-    <color name="GREEN2">#ff1d721d</color>
-    <color name="GREEN3">#731d721d</color>
-    <color name="BLUE">#8c0000ff</color>
-    <color name="azul">#ff497ec0</color>
-    <color name="azul2">#8accf7f2</color>
-    <color name="boton">#ff0e260e</color>
-    <color name="boton_paro">#8cff0000</color>
-    <color name="paciente">#d2700000</color>
-    <color name="botonApretado">#e6000394</color>
-    <color name="Fondo1">#D0C3BB</color>
-    <color name="subfondo">#EFF0EA</color>
-    <color name="botones">#B4A48A</color>
-    <color name="black">#000</color>
-    <color name="WHITE">#fff</color>
+
 
     <!-- PIBBOY -->
     <color name="fondo_pipboy">#ff0a150a</color>
     <color name="letra_pipboy">#ff1d721d</color>
+    <color name="GREEN_HINT">#380b7211</color>
+    <color name="paciente">#d2700000</color>
+    <!--
+    <color name="RED">#ff52150d</color>
+    <color name="GREEN">#8c00ff00</color>
+    <color name="boton_paro">#8cff0000</color>
+    <color name="letra">#ff524a48</color>
+    <color name="hint">#3dbababb</color>
+    <color name="BLUE">#8c0000ff</color>
+    <color name="azul">#ff497ec0</color>
+    <color name="azul2">#8accf7f2</color>
+    <color name="WHITE">#fff</color>
+    <color name="black">#000</color>
+    <color name="botones">#B4A48A</color>
+    <color name="subfondo">#EFF0EA</color>
+    <color name="Fondo1">#D0C3BB</color>
+    <color name="botonApretado">#e6000394</color>
+
+    -->
+
+
 </resources>
