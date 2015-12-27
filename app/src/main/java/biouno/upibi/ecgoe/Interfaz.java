@@ -701,6 +701,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
 
             case R.id.info:
                 startActivity(new Intent(this, AcercaDe.class));
+                break;
 
             case R.id.datos: //Modificar Datos Paciente
                 startActivity(new Intent(this, DatosPaciente.class));

@@ -26,6 +26,8 @@ public class AcercaDe extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.acercade_layout);
 
+        aceptar = (Button) findViewById(R.id.b_aceptar);
+
         aceptar.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Vibrator vibrador = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);        // Vibrate for 500 milliseconds

@@ -24,8 +24,8 @@
 
     <item
         android:id="@+id/info"
-        android:orderInCategory="4"
-        android:title="@string/demo" />
+        android:orderInCategory="5"
+        android:title="@string/info" />
 
     <!--
     <item android:id="@+id/visible"

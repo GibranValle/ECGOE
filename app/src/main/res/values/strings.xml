@@ -52,6 +52,6 @@
     <string name="pop_invertir">Invertir: </string>
     <string name="pop_autoset">Autoset: </string>
     <string name="pop_boton_aceptar">Aceptar</string>
-    <string name="pop_mensaje">\nBioinstrumentación I\n\n Interfaz para electrocardiógrafo\nAndrade, Piñones y Valle\n\n2016 - V2.6.5</string>
+    <string name="pop_mensaje">Bioinstrumentación I\n Interfaz para electrocardiógrafo\n\nAndrade, Piñones y Valle\n2016 - V2.6.5</string>
 
 </resources>
