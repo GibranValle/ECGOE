@@ -84,7 +84,6 @@ public class Interfaz extends Activity implements View.OnClickListener{
     Button boton;                               // VARIABLE PARA BOTON
     Canvas canvas;                              // VARIABLE PARA CANVAS
     ImageView espacio, corazon;                 // VARIABLES PARA ANIMACION DE CORAZON
-    Intent i;                                   // VARIABLE PARA CAMBIO DE ACTIVITY
     DecelerateInterpolator desacelerado;
     MediaPlayer mp;                             // VARIABLES PARA SONIDO
     Paint paint;                                // VARIABLE PARA CANVAS
@@ -233,6 +232,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
             }
         }
 
+        salud.setText("BPM: - - ");
         empezarCanvas();
         reiniciarValores();
 
@@ -286,6 +286,8 @@ public class Interfaz extends Activity implements View.OnClickListener{
             empezarCanvas();
             pararAlarma();
             reiniciarValores();
+            salud.setText("BPM: - - ");
+            corazon.setVisibility(View.INVISIBLE);
         }
 
     }
@@ -688,8 +690,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
         switch (id) {
             case R.id.conectar:
                 Log.d(TAG, "ABRIR FRAGMENT");
-                i = new Intent(this, DeviceList.class);
-                startActivityForResult(i, REQUEST_CONNECT_DEVICE_SECURE);
+                startActivityForResult(new Intent(this, DeviceList.class), REQUEST_CONNECT_DEVICE_SECURE);
                 break;
              /*
             case R.id.visible: //hacer BT visible
@@ -697,6 +698,9 @@ public class Interfaz extends Activity implements View.OnClickListener{
                 hacerVisible();
                 break;
             */
+
+            case R.id.info:
+                startActivity(new Intent(this, AcercaDe.class));
 
             case R.id.datos: //Modificar Datos Paciente
                 startActivity(new Intent(this, DatosPaciente.class));
@@ -724,6 +728,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
     }
 
     /* ///////////////////////////////METODOS BLUETOOTH/////////////////////////////////////////////// */
+    /*
     private void hacerVisible() {
         if (D) Log.d(TAG, "ensure discoverable");
         if (BTadaptador.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
@@ -735,6 +740,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
             startActivity(discoverableIntent);
         }
     }
+    */
 
     private void configurar() {
         Log.d(TAG, "setupChat()");

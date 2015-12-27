@@ -4,16 +4,15 @@
     android:layout_height="wrap_content"
     android:layout_width="wrap_content"
     android:layout_gravity="center|top"
-    android:layout_margin="10dp"
-    >
+    android:layout_margin="10dp">
 
     <!--Titulo-->
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        >
+        android:layout_weight="1">
+
         <TextView
             android:layout_height="0dp"
             android:layout_width="match_parent"
@@ -21,8 +20,7 @@
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="@string/pop_ingresa"
             style="@style/titulo"
-            android:id="@+id/titulo"
-            />
+            android:id="@+id/titulo" />
 
         <!--Linea-->
         <TextView
@@ -30,29 +28,26 @@
             android:layout_width="match_parent"
             android:layout_weight=".05"
             android:background="@color/letra_pipboy"
-            android:id="@+id/linea"
-            />
+            android:id="@+id/linea" />
     </LinearLayout>
-
 
 
     <LinearLayout
         android:layout_height="0dp"
         android:layout_width="match_parent"
-        android:layout_weight="2"
-        >
+        android:layout_weight="2">
 
         <TextView
             android:layout_height="wrap_content"
             android:layout_width="0dp"
-            android:layout_weight="2"
+            android:layout_weight="2.5"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="@string/pop_nombre"
             style="@style/letramediana"
             android:layout_gravity="center"
             android:gravity="left"
-            android:id="@+id/tag_nombre"
-            />
+            android:id="@+id/tag_nombre" />
+
         <EditText
             android:layout_height="wrap_content"
             android:layout_width="0dp"
@@ -64,6 +59,8 @@
             android:hint="@string/pop_hint_nombre"
             android:layout_gravity="center"
             android:gravity="center"
+            android:textColor="@color/letra_pipboy"
+            android:textColorHighlight="@color/GREEN_HINT"
             android:id="@+id/paciente_nombre" />
     </LinearLayout>
 
@@ -71,19 +68,19 @@
         android:orientation="horizontal"
         android:layout_height="0dp"
         android:layout_width="match_parent"
-        android:layout_weight="2"
-        >
+        android:layout_weight="2">
+
         <TextView
             android:layout_height="wrap_content"
             android:layout_width="0dp"
-            android:layout_weight="2"
+            android:layout_weight="2.5"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="@string/pop_edad"
             style="@style/letramediana"
             android:layout_gravity="center"
             android:gravity="left"
-            android:id="@+id/tag_edad"
-            />
+            android:id="@+id/tag_edad" />
+
         <EditText
             android:layout_width="0dp"
             android:textColorHint="@color/GREEN_HINT"
@@ -94,6 +91,8 @@
             android:hint="@string/pop_hint_edad"
             android:layout_gravity="center"
             android:gravity="center"
+            android:textColor="@color/letra_pipboy"
+            android:textColorHighlight="@color/GREEN_HINT"
             android:id="@+id/paciente_edad" />
     </LinearLayout>
 
@@ -103,7 +102,9 @@
         android:layout_height="0dp"
         android:layout_width="match_parent"
         android:layout_weight="0.5"
+        android:layout_marginTop="10dp"
         android:id="@+id/botones">
+
         <Button
             android:layout_height="wrap_content"
             android:layout_width="0dp"

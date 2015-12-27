@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_height="wrap_content"
+    android:layout_width="wrap_content"
+    android:layout_gravity="center|top"
+    android:layout_margin="10dp">
+
+    <!--Titulo-->
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <TextView
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="@string/pop_titulo"
+                style="@style/titulo"
+                android:id="@+id/titulo" />
+
+            <ImageView
+                android:src="@drawable/UPIBI"
+                android:layout_height="80dp"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:id="@+id/imageView" />
+
+        </LinearLayout>
+
+
+        <!--Linea-->
+        <TextView
+            android:layout_height="0dp"
+            android:layout_width="match_parent"
+            android:layout_weight=".05"
+            android:background="@color/letra_pipboy"
+            android:id="@+id/linea" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_height="0dp"
+        android:layout_width="match_parent"
+        android:layout_weight="2">
+
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="2.5"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="@string/pop_mensaje"
+            style="@style/letramediana"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center"
+            android:id="@+id/tag_acerca" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_height="0dp"
+        android:layout_width="match_parent"
+        android:layout_weight="0.5"
+        android:layout_marginTop="10dp"
+        android:id="@+id/botones">
+
+        <Button
+            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:text="@string/pop_boton_aceptar"
+            style="@style/textoBoton"
+            android:layout_marginRight="2dp"
+            android:id="@+id/b_actualizar" />
+
+    </LinearLayout>
+
+</LinearLayout>

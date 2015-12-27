@@ -22,6 +22,11 @@
         android:orderInCategory="4"
         android:title="@string/demo" />
 
+    <item
+        android:id="@+id/info"
+        android:orderInCategory="4"
+        android:title="@string/demo" />
+
     <!--
     <item android:id="@+id/visible"
         android:orderInCategory="5"
