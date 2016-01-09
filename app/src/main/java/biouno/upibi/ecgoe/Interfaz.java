@@ -232,6 +232,9 @@ public class Interfaz extends Activity implements View.OnClickListener{
             }
         }
 
+        // configurar el servicio de BT
+        if (BTservice == null) configurar();
+
         salud.setText("BPM: - - ");
         empezarCanvas();
         reiniciarValores();
