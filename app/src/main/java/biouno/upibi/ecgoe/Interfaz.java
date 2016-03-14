@@ -906,6 +906,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
                     Log.e(TAG, "ERROR DE CONEXION");
                     Toast.makeText(this, "ERROR DE CONEXION", Toast.LENGTH_SHORT).show();
                     finish();
+                    //
                 }
         }
     }
