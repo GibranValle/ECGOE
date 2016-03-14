@@ -114,9 +114,88 @@ public class Interfaz extends Activity implements View.OnClickListener{
     int contadorAlarma;                         // VARIABLE PARA PARAR ALARMA AL SALIR
     int error =0;
     int shoot, flag;
+    int derivacion;                             // VARIABLE PARA DERIVACION
 
     // Name of the connected device
     private String connectedDeviceName = null;
+    // The Handler that gets information back from the BluetoothChatService
+    private final Handler mHandler = new Handler() {
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                // APLICAR LOS CAMBIOS DE COLOR EN LA INTERFAZ CUANDO DETECTA UN CAMBIO EN ESTADO
+                case MESSAGE_STATE_CHANGE:
+                    if (D) Log.i(TAG, "MESSAGE_STATE_CHANGE: " + msg.arg1);
+                    switch (msg.arg1) {
+                        case BluetoothManager.STATE_CONNECTED:
+                            estado.setText(R.string.bt_CT);
+                            estado.setBackgroundColor(0x4300ff00);
+                            Log.d(TAG, " BT CONECTADO");
+                            derivacion();
+                            // INICIA EL TIMER PARA DETECCION DE ASISTOLIA, DEBE DETENERSE CADA QUE ENCUENTRA QRS
+                            empezarAlarma();
+                            Log.i(TAG, "RECIBIENDO DATOS, ESPERANDO ASISTOLIA");
+                            break;
+                        case BluetoothManager.STATE_CONNECTING:
+                            stopTimer();
+                            estado.setText(R.string.bt_CTING);
+                            estado.setBackgroundColor(0x430000ff);
+                            Log.d(TAG, " BT CONECTANDO");
+                            break;
+                        case BluetoothManager.STATE_LISTEN:
+                            estado.setText(R.string.bt_DC);
+                            estado.setBackgroundColor(0x43ff0000);
+                            Log.d(TAG, " BT DESCONECTADO");
+                            break;
+                        case BluetoothManager.STATE_NONE:
+                            estado.setText(R.string.bt_DC);
+                            estado.setBackgroundColor(0x43ff0000);
+                            Log.d(TAG, " BT DESCONECTADO");
+                            enviarMensaje("F");
+                            break;
+                    }
+                    break;
+                case MESSAGE_WRITE:
+                    byte[] writeBuf = (byte[]) msg.obj;
+                    String writeMessage = new String(writeBuf);
+                    break;
+                case MESSAGE_READ:
+                    String readMessage = (String) msg.obj;
+                    //Log.e(TAG, "mensaje llegando: " + readMessage);
+                    int largo = readMessage.length();
+                    int inicio = readMessage.indexOf("V");
+                    int fin = inicio + 4;
+                    int palabrasEnteras = largo / 4;
+
+                    //Log.e(TAG, "largo : " + largo +" inicio: "+inicio +" fin: "+fin);
+                    if (largo >= 4 && largo <= 1000 && inicio >= 0) {
+                        if (!readMessage.endsWith("\r") || !readMessage.endsWith("\n")) {
+                            palabrasEnteras = palabrasEnteras - 1;
+                        }
+                        //Log.e(TAG, "palabras enteras : " + palabrasEnteras);
+                        for (int j = 1; j <= palabrasEnteras; j++) {
+
+                            lectura = readMessage.substring(inicio + 1, fin);
+                            //Log.e(TAG, "palabraSeparada : " + lectura+" punto: "+punto);
+                            readMessage = readMessage.replaceFirst(readMessage, readMessage);
+                            inicio = inicio + 4;
+                            fin = fin + 4;
+                            punto = Integer.parseInt(lectura);
+                            graficarPunto(240 - punto);
+                        }
+                    }
+                    break;
+                case MESSAGE_DEVICE_NAME:
+                    // save the connected device's name
+                    connectedDeviceName = msg.getData().getString(DEVICE_NAME);
+                    Toast.makeText(getApplicationContext(), "Conectado a " + connectedDeviceName, Toast.LENGTH_SHORT).show();
+                    break;
+                case MESSAGE_TOAST:
+                    Toast.makeText(getApplicationContext(), msg.getData().getString(TOAST),
+                            Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+    };
     // String buffer for outgoing messages
     private StringBuffer outStringBuffer;
     ///////////////////////////////////* VARIABLES  *//////////////////////////////////////////////
@@ -218,6 +297,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
         // carga datos y los despliega en el textview
         cargarDatos();
 
+
         //////////////////*BLUETOOH ////////////////*/////////////////*/////////////////*/////////////////*/
         if (!BTadaptador.isEnabled())//habilitar si no lo esta
         {
@@ -238,6 +318,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
         salud.setText("BPM: - - ");
         empezarCanvas();
         reiniciarValores();
+        derivacion();
 
         //////////////////*BLUETOOH ////////////////*/////////////////*/////////////////*/////////////////*/
     }
@@ -291,6 +372,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
             reiniciarValores();
             salud.setText("BPM: - - ");
             corazon.setVisibility(View.INVISIBLE);
+            derivacion();
         }
 
     }
@@ -312,6 +394,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
             timer = null;
         }
     }
+    //////////////////////////////////////* METODOS PARA TIMER *////////////////////////////////////
 
     public void initializeTimerTask() {
         timerTask = new TimerTask() {
@@ -326,7 +409,6 @@ public class Interfaz extends Activity implements View.OnClickListener{
             }
         };
     }
-    //////////////////////////////////////* METODOS PARA TIMER *////////////////////////////////////
 
     public void empezarAlarma() {
         sonando = true;
@@ -336,11 +418,9 @@ public class Interfaz extends Activity implements View.OnClickListener{
         //inicializar el timer
         alarmaTimerTask();
         //esperar 0ms para empezar, repetir cada 100ms
-        if (contadorAlarma == 1)
-        {
+        if (contadorAlarma == 1) {
             timerAlarma.schedule(alarmaTask, 2000); //
-        } else
-        {
+        } else {
             timerAlarma.schedule(alarmaTask, 2000, 50000); //
         }
     }
@@ -358,6 +438,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
             corazon.setVisibility(View.VISIBLE);
         }
     }
+    //////////////////////////////////////* MEDIA PLAYER */////////////////////////////////////////
 
     public void alarmaTimerTask() {
         alarmaTask = new TimerTask() {
@@ -377,7 +458,6 @@ public class Interfaz extends Activity implements View.OnClickListener{
             }
         };
     }
-    //////////////////////////////////////* MEDIA PLAYER */////////////////////////////////////////
 
     //////////////////////////////////////* MEDIA PLAYER *////////////////////////////////////
     public void playAlarma() {
@@ -401,12 +481,33 @@ public class Interfaz extends Activity implements View.OnClickListener{
         }
     }
 
-    public void sonidoBip()
-    {
+    public void sonidoBip() {
         soundPool.play(bip, 0.5f, 0.5f, 1, 0, 1);
     }
 
     //////////////////////////////////* METODOS PERSONALIZADOS /////////////////////////////////////
+    void derivacion() {
+        Log.e(TAG, "derivacion: " + derivacion);
+        switch (derivacion) // elegir derivacion
+        {
+            case 0:
+                enviarMensaje("D1");
+                break;
+            case 1:
+                enviarMensaje("D2");
+                break;
+            case 2:
+                enviarMensaje("D3");
+                break;
+            case 3:
+                enviarMensaje("D4");
+                break;
+            case 4:
+                enviarMensaje("D5");
+                break;
+        }
+    }
+
     void reiniciarValores() {
         max = 0;
         min = 240;
@@ -418,13 +519,13 @@ public class Interfaz extends Activity implements View.OnClickListener{
 
     void graficarPunto(int punto) {
         // INICIO DE GRAFICA
-        if(to == 0)
+        if (to == 0)
         {
             corazon.setVisibility(View.VISIBLE);    // MOSTRAR EL CORAZON LATIENDO
             empezarCanvas();        // BORRAR GRAFICAS PREVIAS
         }
 
-        if( to >= ancho) // Graficando fuera del limite X
+        if (to >= ancho) // Graficando fuera del limite X
         {
             empezarCanvas();    // BORRAR GRAFICAS PREVIAS
         }
@@ -434,18 +535,17 @@ public class Interfaz extends Activity implements View.OnClickListener{
 
     void graficar() {
         // INICIO DE GRAFICA
-        if(to == 0)
-        {
+        if (to == 0) {
             corazon.setVisibility(View.VISIBLE);    // MOSTRAR EL CORAZON LATIENDO
             empezarCanvas();        // BORRAR GRAFICAS PREVIAS
         }
 
-        if( to >= ancho) // Graficando fuera del limite X
+        if (to >= ancho) // Graficando fuera del limite X
         {
             empezarCanvas();    // BORRAR GRAFICAS PREVIAS
         }
 
-        if(a>=250)  // SE TERMINA EL VERCTOR, REINICIARLO
+        if (a >= 250)  // SE TERMINA EL VERCTOR, REINICIARLO
         {
             a = 0;
         }
@@ -455,17 +555,14 @@ public class Interfaz extends Activity implements View.OnClickListener{
         a = a + 1;
     }
 
-    public void dibujarSeñal(int point)
-    {
+    public void dibujarSeñal(int point) {
         // amplificar
         vf = (int) (point * amplificacion / 100);
-        if(invertir)
+        if (invertir) {
+            canvas.drawLine(to, vo - offset, tf, vf - offset, paint);
+        } else
         {
-            canvas.drawLine(to, vo-offset, tf, vf-offset, paint);
-        }
-        else
-        {
-            canvas.drawLine(to, 240-vo+offset, tf, 240-vf+offset, paint);
+            canvas.drawLine(to, 240 - vo + offset, tf, 240 - vf + offset, paint);
         }
 
         // INCREMENTOS
@@ -476,10 +573,8 @@ public class Interfaz extends Activity implements View.OnClickListener{
 
     public void calcularQRS(int point) {
         // AMPLITUD INICIAL
-        if (contador < 250)
-        {
-            if (point > max)
-            {
+        if (contador < 250) {
+            if (point > max) {
                 max = point;
                 amplitud = max - min;
                 //Log.v(TAG,"amplitud: "+amplitud);
@@ -493,8 +588,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
 
         if (contador >= 250) {
             // MEDICION DE AMPLITUD INESTABLE
-            if (point > max2)
-            {
+            if (point > max2) {
                 max2 = point;
                 amplitud2 = max2 - min2;
                 //Log.v(TAG,"amplitud2: "+amplitud2);
@@ -517,12 +611,11 @@ public class Interfaz extends Activity implements View.OnClickListener{
                 max = 0;
                 min = 240;
             } else {
-                if (autoset)
-                {
+                if (autoset) {
                     // calcular amplificacion para llenar la pantalla;
-                    amplificacion = 230*100/(float) amplitud;
-                    offset = (max+min)/2-45;
-                    Log.e(TAG,"Amplificacion necesaria para corregir: "+amplificacion);
+                    amplificacion = 230 * 100 / (float) amplitud;
+                    offset = (max + min) / 2 - 45;
+                    Log.e(TAG, "Amplificacion necesaria para corregir: " + amplificacion);
                 }
                 contador = 250;
                 max2 = 0;
@@ -554,14 +647,12 @@ public class Interfaz extends Activity implements View.OnClickListener{
         }
 
         // DETECCION DE QRS
-        if (flag == 1)
-        {
+        if (flag == 1) {
             Log.e(TAG, "ESPERANDO ASISTOLIA");
             flag = 0;
             periodo = System.currentTimeMillis() - inicio;
             inicio = System.currentTimeMillis();
-            if (periodo > 200 && periodo < 2000)
-            {
+            if (periodo > 200 && periodo < 2000) {
                 // DETECCION DE QRS, PARAR ALARMA DE ASISTOLIA
                 pararAlarma();
                 // REINICIA EL TIMER PARA DETECCION DE ASISTOLIA, DEBE DETENERSE CADA QUE ENCUENTRA QRS
@@ -584,6 +675,7 @@ public class Interfaz extends Activity implements View.OnClickListener{
             }
         }
     }
+    /////////////////////////////////** METODOS PERSONALIZADOS///////////////////////////////////////
 
     void empezarCanvas() {
         // DIBUJAR RECTA DEL FONDO
@@ -622,7 +714,6 @@ public class Interfaz extends Activity implements View.OnClickListener{
             paint.setColor(0xff1d721d);// verde
         }
     }
-    /////////////////////////////////** METODOS PERSONALIZADOS///////////////////////////////////////
 
     void animarCorazon(long periodo)
     {
@@ -656,13 +747,12 @@ public class Interfaz extends Activity implements View.OnClickListener{
         set3.playTogether(set, set1, set2);
         set3.start();
     }
+    /* ///////////////////////////////MENU/////////////////////////////////////////////////////// */
 
-    void vibrar(int ms)
-    {
+    void vibrar(int ms) {
         Vibrator vibrador = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);        // Vibrate for 500 milliseconds
         vibrador.vibrate(ms);
     }
-    /* ///////////////////////////////MENU/////////////////////////////////////////////////////// */
 
     void cargarDatos() {
         // RECUPERAR LOS DATOS GUARDADOS POR EL USUARIO PREVIAMENTE
@@ -670,7 +760,12 @@ public class Interfaz extends Activity implements View.OnClickListener{
         // cargar el dato en la variable, o elegir por default la segunda opcion
         nombrePaciente = respaldo.getString("patientName", "Paciente");
         edadPaciente = respaldo.getString("patientAge", "Edad");
-        paciente.setText(nombrePaciente + "\n" + edadPaciente + " años");
+        derivacion = respaldo.getInt("derivacion", 4);
+        if (derivacion >= 0 && derivacion <= 2) {
+            paciente.setText(nombrePaciente + "\n" + edadPaciente + " años" + "\n" + "Derivación: " + (derivacion + 1));
+        } else {
+            paciente.setText(nombrePaciente + "\n" + edadPaciente + " años");
+        }
         paso = Integer.parseInt(respaldo.getString("paso", "2"));
         umbralQRS = Integer.parseInt(respaldo.getString("amplitud", "20"));
         valor = Integer.parseInt(respaldo.getString("amplificacion", "2"));
@@ -686,6 +781,21 @@ public class Interfaz extends Activity implements View.OnClickListener{
         getMenuInflater().inflate(R.menu.menu, menu);
         return true;
     }
+
+    /* ///////////////////////////////METODOS BLUETOOTH/////////////////////////////////////////////// */
+    /*
+    private void hacerVisible() {
+        if (D) Log.d(TAG, "ensure discoverable");
+        if (BTadaptador.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
+            // elegir el intent para hacer visible
+            Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+            // 300 segundos de hacerlo visible
+            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+            // lanzar el intent
+            startActivity(discoverableIntent);
+        }
+    }
+    */
 
     public boolean onOptionsItemSelected(MenuItem item) {
         Log.d(TAG, "BUTON PUSHADO");
@@ -730,21 +840,6 @@ public class Interfaz extends Activity implements View.OnClickListener{
         }
         return super.onOptionsItemSelected(item);
     }
-
-    /* ///////////////////////////////METODOS BLUETOOTH/////////////////////////////////////////////// */
-    /*
-    private void hacerVisible() {
-        if (D) Log.d(TAG, "ensure discoverable");
-        if (BTadaptador.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
-            // elegir el intent para hacer visible
-            Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-            // 300 segundos de hacerlo visible
-            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-            // lanzar el intent
-            startActivity(discoverableIntent);
-        }
-    }
-    */
 
     private void configurar() {
         Log.d(TAG, "setupChat()");
@@ -814,83 +909,5 @@ public class Interfaz extends Activity implements View.OnClickListener{
                 }
         }
     }
-    // The Handler that gets information back from the BluetoothChatService
-    private final Handler mHandler = new Handler() {
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                // APLICAR LOS CAMBIOS DE COLOR EN LA INTERFAZ CUANDO DETECTA UN CAMBIO EN ESTADO
-                case MESSAGE_STATE_CHANGE:
-                    if (D) Log.i(TAG, "MESSAGE_STATE_CHANGE: " + msg.arg1);
-                    switch (msg.arg1) {
-                        case BluetoothManager.STATE_CONNECTED:
-                            estado.setText(R.string.bt_CT);
-                            estado.setBackgroundColor(0x4300ff00);
-                            Log.d(TAG, " BT CONECTADO");
-                            enviarMensaje("O");
-                            // INICIA EL TIMER PARA DETECCION DE ASISTOLIA, DEBE DETENERSE CADA QUE ENCUENTRA QRS
-                            empezarAlarma();
-                            Log.i(TAG, "RECIBIENDO DATOS, ESPERANDO ASISTOLIA");
-                            break;
-                        case BluetoothManager.STATE_CONNECTING:
-                            stopTimer();
-                            estado.setText(R.string.bt_CTING);
-                            estado.setBackgroundColor(0x430000ff);
-                            Log.d(TAG, " BT CONECTANDO");
-                            break;
-                        case BluetoothManager.STATE_LISTEN:
-                            estado.setText(R.string.bt_DC);
-                            estado.setBackgroundColor(0x43ff0000);
-                            Log.d(TAG, " BT DESCONECTADO");
-                            break;
-                        case BluetoothManager.STATE_NONE:
-                            estado.setText(R.string.bt_DC);
-                            estado.setBackgroundColor(0x43ff0000);
-                            Log.d(TAG, " BT DESCONECTADO");
-                            enviarMensaje("F");
-                            break;
-                    }
-                    break;
-                case MESSAGE_WRITE:
-                    byte[] writeBuf = (byte[]) msg.obj;
-                    String writeMessage = new String(writeBuf);
-                    break;
-                case MESSAGE_READ:
-                    String readMessage = (String) msg.obj;
-                    //Log.e(TAG, "mensaje llegando: " + readMessage);
-                    int largo = readMessage.length();
-                    int inicio = readMessage.indexOf("V");
-                    int fin = inicio + 4;
-                    int palabrasEnteras = largo / 4;
-
-                    //Log.e(TAG, "largo : " + largo +" inicio: "+inicio +" fin: "+fin);
-                    if (largo >= 4 && largo <= 1000 && inicio >= 0) {
-                        if (!readMessage.endsWith("\r") || !readMessage.endsWith("\n")) {
-                            palabrasEnteras = palabrasEnteras - 1;
-                        }
-                        //Log.e(TAG, "palabras enteras : " + palabrasEnteras);
-                        for (int j = 1; j <= palabrasEnteras; j++) {
-
-                            lectura = readMessage.substring(inicio + 1, fin);
-                            //Log.e(TAG, "palabraSeparada : " + lectura+" punto: "+punto);
-                            readMessage = readMessage.replaceFirst(readMessage, readMessage);
-                            inicio = inicio + 4;
-                            fin = fin + 4;
-                            punto = Integer.parseInt(lectura);
-                            graficarPunto(240 - punto);
-                        }
-                    }
-                    break;
-                case MESSAGE_DEVICE_NAME:
-                    // save the connected device's name
-                    connectedDeviceName = msg.getData().getString(DEVICE_NAME);
-                    Toast.makeText(getApplicationContext(), "Conectado a " + connectedDeviceName, Toast.LENGTH_SHORT).show();
-                    break;
-                case MESSAGE_TOAST:
-                    Toast.makeText(getApplicationContext(), msg.getData().getString(TOAST),
-                            Toast.LENGTH_SHORT).show();
-                    break;
-            }
-        }
-    };
 }
     /* ///////////////////////////////METODOS BLUETOOTH/////////////////////////////////////////////// */

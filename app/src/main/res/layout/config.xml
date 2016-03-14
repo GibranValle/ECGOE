@@ -38,17 +38,15 @@
         android:layout_weight="2">
 
         <TextView
+            android:id="@+id/tag_paso"
+            style="@style/letramediana"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="5"
             android:gravity="left|center"
-            android:text="@string/pop_paso"
-            android:id="@+id/tag_paso"
-            style="@style/letramediana" />
+            android:text="@string/pop_paso" />
 
         <EditText
-            android:textColor="@color/letra_pipboy"
-            android:textColorHighlight="@color/GREEN_HINT"
             android:id="@+id/edit_paso"
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -59,29 +57,29 @@
             android:hint="@string/pop_hint_paso"
             android:inputType="numberDecimal"
             android:maxLength="35"
+            android:textColor="@color/letra_pipboy"
+            android:textColorHighlight="@color/GREEN_HINT"
             android:textColorHint="@color/GREEN_HINT" />
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/umbral"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="2"
-        android:orientation="horizontal"
-        android:id="@+id/umbral">
+        android:orientation="horizontal">
 
         <TextView
             android:id="@+id/tag_amplitud"
             style="@style/letramediana"
             android:layout_width="0dp"
             android:layout_height="match_parent"
+            android:layout_gravity="center"
             android:layout_weight="5"
             android:gravity="left|center"
-            android:text="@string/pop_amplitud"
-            android:layout_gravity="center" />
+            android:text="@string/pop_amplitud" />
 
         <EditText
-            android:textColor="@color/letra_pipboy"
-            android:textColorHighlight="@color/GREEN_HINT"
             android:id="@+id/edit_amplitud"
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -91,15 +89,17 @@
             android:gravity="center"
             android:hint="@string/pop_hint_amplitud"
             android:inputType="numberDecimal"
+            android:textColor="@color/letra_pipboy"
+            android:textColorHighlight="@color/GREEN_HINT"
             android:textColorHint="@color/GREEN_HINT" />
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/gain"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="2"
-        android:orientation="horizontal"
-        android:id="@+id/gain">
+        android:orientation="horizontal">
 
         <TextView
             android:id="@+id/tag_amplificacion"
@@ -162,14 +162,14 @@
         android:orientation="horizontal">
 
         <TextView
+            android:id="@+id/tag_autoset"
+            style="@style/letramediana"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:layout_weight="5"
             android:gravity="left|center"
-            android:text="@string/pop_autoset"
-            android:id="@+id/tag_autoset"
-            style="@style/letramediana" />
+            android:text="@string/pop_autoset" />
 
         <FrameLayout
             android:layout_width="0dp"
@@ -182,18 +182,46 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
+                android:gravity="right"
                 android:textOff="No"
-                android:textOn="Sí"
-                android:gravity="right" />
+                android:textOn="Sí" />
         </FrameLayout>
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/derivacion"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tag_derivacion"
+            style="@style/letramediana"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="5"
+            android:gravity="left|center"
+            android:text="@string/pop_derivacion" />
+
+        <SeekBar
+            android:id="@+id/barra_derivacion"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
+            android:layout_weight="5"
+            android:max="4"
+            android:progress="50" />
+    </LinearLayout>
+
 
     <LinearLayout
         android:id="@+id/botones"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.5"
         android:layout_marginTop="10dp"
+        android:layout_weight="0.5"
         android:orientation="horizontal">
 
         <Button

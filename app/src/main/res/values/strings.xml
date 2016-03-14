@@ -49,6 +49,7 @@
     <string name="pop_amplitud">Umbral QRS:</string>
     <string name="pop_hint_amplitud">(0 a 240)</string>
     <string name="pop_amplificacion">Gain x 1</string>
+    <string name="pop_derivacion">Derivación:</string>
     <string name="pop_invertir">Invertir: </string>
     <string name="pop_autoset">Autoset: </string>
     <string name="pop_boton_aceptar">Aceptar</string>

@@ -27,12 +27,12 @@ public class DatosConfig extends Activity {
 
     Button actualizar, cancelar;
     String paso, umbralQRS;
-    SeekBar barra;
+    SeekBar barra, barra_derivacion;
     Switch switch_invertir, switch_autoset;
-    TextView editPaso, editAmplitud, tagAmplificacion;
+    TextView editPaso, editAmplitud, tagAmplificacion, tagDerivacion;
     LinearLayout umbral, gain;
     float amplificacion;
-    int dato;
+    int dato, derivacion_num;
     boolean invertir, autoset;
 
     //
@@ -49,7 +49,9 @@ public class DatosConfig extends Activity {
         actualizar = (Button) findViewById(R.id.b_actualizar);
         cancelar = (Button) findViewById(R.id.b_cancelar);
         barra = (SeekBar) findViewById(R.id.barra);
+        barra_derivacion = (SeekBar) findViewById(R.id.barra_derivacion);
         tagAmplificacion = (TextView) findViewById(R.id.tag_amplificacion);
+        tagDerivacion = (TextView) findViewById(R.id.tag_derivacion);
         switch_invertir = (Switch) findViewById(R.id.invertir);
         switch_autoset = (Switch) findViewById(R.id.autoset);
         umbral = (LinearLayout) findViewById(R.id.umbral);
@@ -94,6 +96,31 @@ public class DatosConfig extends Activity {
             }
         });
 
+        barra_derivacion.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                derivacion_num = progress;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                if (derivacion_num == 3) // señal de calibración
+                {
+                    tagDerivacion.setText("Calibracion");
+
+                } else if (derivacion_num == 4) {
+                    tagDerivacion.setText("Barrido");
+                } else {
+                    tagDerivacion.setText("Derivación: " + (derivacion_num + 1));
+                }
+            }
+        });
+
         final SharedPreferences respaldo = getSharedPreferences("MisDatos", Context.MODE_PRIVATE);
         // cargar la clave en la variable clave, o 0000 por default (no encontrada, etc);
         paso = respaldo.getString("paso", "2");
@@ -101,12 +128,24 @@ public class DatosConfig extends Activity {
         dato = Integer.parseInt(respaldo.getString("amplificacion", "2"));
         invertir = respaldo.getBoolean("invertir", false);
         autoset = respaldo.getBoolean("autoset", true);
+        derivacion_num = respaldo.getInt("derivacion", 4);
+
 
         editPaso.setText(paso);
         editAmplitud.setText(umbralQRS);
         barra.setProgress(dato);
+        barra_derivacion.setProgress(derivacion_num);
         amplificacion = Math.round(100 * ((dato * dato * dato * dato * 0.010417f) - (dato * dato * dato * 0.020833f) + (dato * dato * 0.114583f) + (dato * 0.145833f) + (0.25f)));
         tagAmplificacion.setText("Gain x " + amplificacion / 100);
+        if (derivacion_num == 3) // señal de calibración
+        {
+            tagDerivacion.setText("Calibracion");
+
+        } else if (derivacion_num == 4) {
+            tagDerivacion.setText("Barrido");
+        } else {
+            tagDerivacion.setText("Derivación: " + (derivacion_num + 1));
+        }
         switch_invertir.setChecked(invertir);
         switch_autoset.setChecked(autoset);
 
@@ -124,6 +163,7 @@ public class DatosConfig extends Activity {
                 editor.putString("amplificacion", String.valueOf(dato));
                 editor.putBoolean("invertir", invertir);
                 editor.putBoolean("autoset", autoset);
+                editor.putInt("derivacion", derivacion_num);
 
 
                 if (Integer.parseInt(umbralQRS) >= 0 && Integer.parseInt(umbralQRS) <= 240) {
